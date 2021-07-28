@@ -1,8 +1,8 @@
 NAME = minishell
 CC = gcc
-FLAGS = -Wall -Wextra -Werror
+FLAGS = -Wall -Wextra #-Werror
 LIB = -L libft/
-OPTION_LIB = -lft
+OPTION_LIB = -lft -ltermcap
 LIBFT = make -C libft
 
 SRC = minishell.c
