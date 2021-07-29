@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/28 13:48:00 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/05/16 16:58:21 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/07/29 19:18:47 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ char				*ft_strrchr(const char *s, int c);
 const char			*ft_strnstr(const char *haystack,
 						const char *needle, size_t len);
 int					ft_strncmp(const char *s1, const char *s2, size_t n);
+int					ft_strcmp(const char *s1, const char *s2);
 int					ft_atoi(const char *str);
 int					ft_isalpha(int c);
 int					ft_isdigit(int c);
@@ -53,6 +54,7 @@ char				**ft_split(const char *s, char c);
 char				*ft_itoa(int n);
 char				*ft_strmapi(char const *s, char (*f)(unsigned int, char));
 void				ft_putchar_fd(char c, int fd);
+int					ft_putchar(int c);
 void				ft_putstr_fd(char *s, int fd);
 void				ft_putendl_fd(char *s, int fd);
 void				ft_putnbr_fd(int n, int fd);

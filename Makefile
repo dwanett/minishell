@@ -39,7 +39,6 @@ fclean:
 	@echo "\nDeleting executable..."
 	@rm -f $(NAME)
 	@echo "\nDeleting trash..."
-	@rm -f *.txt
 	@rm -f *.out
 	@echo "\033[0m"
 
