@@ -4,3 +4,4 @@ minishell
 /cmake-build-debug/
 /.idea/
 *.a
+/.vscode/

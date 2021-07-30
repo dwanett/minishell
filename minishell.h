@@ -6,7 +6,7 @@
 /*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/07/28 23:57:24 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/07/30 20:06:08 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,5 +17,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <term.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #endif
