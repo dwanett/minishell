@@ -5,7 +5,9 @@ LIB = -L libft/
 OPTION_LIB = -lft -ltermcap -lreadline
 LIBFT = make -C libft
 
-SRC = minishell.c
+SRC =	minishell.c\
+		terminal_utils.c\
+		terminal_history.c
 
 SRCS = $(SRC)
 

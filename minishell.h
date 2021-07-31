@@ -26,16 +26,22 @@
 
 typedef struct s_list_histoy
 {
-	struct s_list_histoy *prev;
-	char *command;
-	struct s_list_histoy *next;
+	struct s_list_histoy	*prev;
+	char					*command;
+	struct s_list_histoy	*next;
 }			t_list_histoy;
 
 typedef struct s_terminal
 {
-	char	*line;
-	int		fd_history;
-	t_list_histoy *history_cmd;
+	char			*line;
+	int				fd_history;
+	t_list_histoy	*history_cmd;
 }			t_terminal;
 
+void		free_history(t_terminal *term);			//terminal_utils.c
+void		ft_exit(t_terminal *term);				//terminal_utils.c
+void		ft_print_n();							//terminal_utils.c
+void		ft_add_history(t_terminal *term);		//terminal_history.c
+void		read_file_history(t_terminal *term);	//terminal_history.c
+void		save_history(t_terminal *term);			//terminal_history.c
 #endif
