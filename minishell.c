@@ -11,95 +11,138 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <sys/ioctl.h>
+
+void ft_add_history(t_terminal *term) // сохраниение истории текущий сессии
+{
+	t_list_histoy *tmp;
+
+	tmp = (t_list_histoy *)malloc(sizeof(t_list_histoy));
+	tmp->command = term->line;
+	if (term->history_cmd == NULL)
+	{
+		tmp->prev = term->history_cmd;
+		tmp->next = NULL;
+	}
+	else
+	{
+		tmp->next = term->history_cmd;
+		term->history_cmd->prev = tmp;
+		tmp->prev = NULL;
+	}
+	term->history_cmd = tmp;
+}
+
+void read_file_history(t_terminal *term)
+{
+	int l;
+	char buf[1];
+	char *str;
+
+	l = 1;
+	term->fd_history = open(".history", O_TRUNC); //хуета с доступом к файлу
+	if (term->fd_history == -1 && errno == 2)
+		return ;
+	else if (term->fd_history == -1)
+	{
+		ft_putstr_fd(strerror(errno), 2);
+		exit(errno);
+	}
+	while (l != 0)
+	{
+		str = (char *)malloc(sizeof(char));
+		while (1)
+		{
+			l = read(term->fd_history, buf, 1);
+			if (l == 0 || *buf == '\n')
+				break;
+			if (term->line == NULL)
+			{
+				term->line = ft_strjoin(str, buf);
+				free(str);
+			}
+			else
+			{
+				str = ft_strjoin(term->line, buf);
+				free(term->line);
+				term->line = str;
+			}
+		}
+		if (l != 0)
+			ft_add_history(term);
+		term->line = NULL;
+		str = NULL;
+	}
+}
+
+void save_history(t_terminal *term) // сохранение истории в файл
+{
+	t_list_histoy *tmp;
+
+	tmp = term->history_cmd;
+	if (tmp == NULL)
+		return ;
+	if (term->fd_history == -1)
+		term->fd_history = open(".history", O_TRUNC | O_CREAT); //хуета с доступом к файлу
+	if (term->fd_history == -1)
+	{
+		ft_putstr_fd(strerror(errno), 2);
+		exit(errno);
+	}
+	else
+	{
+		while (tmp->next != NULL)
+			tmp = tmp->next;
+		while (tmp != NULL)
+		{
+			ft_putstr_fd(tmp->command, term->fd_history);
+			ft_putstr_fd("\n", term->fd_history);
+			tmp = tmp->prev;
+		}
+	}
+}
+
+void ft_exit(t_terminal *term) // выход их терминала и сохраниние истории
+{
+	save_history(term);
+	ft_putstr_fd("exit\n", 1);
+	exit(0);
+}
+
+void ft_print_n() // CTRL C
+{
+	ft_putstr_fd("\nminishell$ ", 1);
+}
+
+void teminal(t_terminal *term) //чтение строк терминала
+{
+
+	term->line = readline("minishell$ ");
+	if (term->line == NULL || !ft_strncmp(term->line, "exit", 4))
+		ft_exit(term);
+	else if (ft_strcmp(term->line, "\0")) // если строка не пустая
+		ft_add_history(term);
+	//else if (!ft_strcmp(term->line, "\e[A"))
+	//	read_history(term, 0);
+	//else if (!ft_strcmp(term->line, "\e[B"))
+	//	read_history(term, 1);
+}
 
 int	main(int argc, char **argv, char **envp)
 {
-	struct termios term;
-	char *str;
-	int i;
-	int l;
-	int	count;
-	int	len_str;
-	int n;
-	struct winsize ws;
+	t_terminal term;
 
-	count = 0;
-	len_str = 0;
-	tcgetattr(0, &term);
-	term.c_lflag &= ~(ECHO);
-	term.c_lflag &= ~(ICANON);
-	tcsetattr(0, TCSANOW ,&term);
-	tgetent(0, getenv("TERM"));
-	readline(str);
-//while (ft_strcmp(str, "\4"))
-//{
-//	ioctl(1, TIOCGWINSZ, &ws);
-//	ft_putnbr_fd(ws.ws_col, 1);
-//	write(1, "\n", 1);
-//	ft_putstr_fd("minishell$ ", 1);
-//	tputs(save_cursor, 1, ft_putchar);
-//	count = 0;
-//	while (1)
-//	{
-//		//ft_putnbr_fd(count, 1);
-//		//ft_putstr_fd("minishell$ ", 1);
-//		l = read(0, str, 100);
-//		if (!ft_strncmp(str, "\e[A", 3))
-//		{
-//			tputs(restore_cursor, 1, ft_putchar);
-//			tputs(tigetstr("ed"), 1, ft_putchar);
-//			ft_putstr_fd("up", 1);
-//			count +=2;
-//			len_str +=2;
-//		}
-//		else if(!ft_strncmp(str, "\e[B", 3))
-//		{
-//			tputs(restore_cursor, 1, ft_putchar);
-//			tputs(tigetstr("ed"), 1, ft_putchar);
-//			ft_putstr_fd("down", 1);
-//			count +=4;
-//			len_str +=4;
-//		}
-//		else if (!ft_strncmp(str, "\e[D", 3))
-//		{
-//			if (count > 0)
-//			{
-//				tputs(cursor_left, 1, ft_putchar);
-//				count--;
-//			}
-//		}
-//		else if (!ft_strncmp(str, "\e[C", 3))
-//		{
-//			if (count < len_str)
-//			{
-//				tputs(cursor_right, 1, ft_putchar);
-//				count++;
-//			}
-//		}
-//		else if(!ft_strcmp(str, "\177") && count > 0)
-//		{
-//			tputs(cursor_left, 1, ft_putchar);
-//			tputs(delete_character, 1, ft_putchar);
-//			count--;
-//			len_str--;
-//		}
-//		else
-//		{
-//			if (ft_strcmp(str, "\177"))
-//			{
-//				count++;
-//				len_str++;
-//			}
-//			write(1, str, l);
-//		}
-//		//ft_putnbr_fd(count, 1);
-//		if (!ft_strcmp(str, "\n") || !ft_strcmp(str, "\4"))
-//			break ;
-//		ft_bzero(str, l);
-//		//STRELOCHKI
-//	}
-//}
-//write(1, "\n", 1);
+	signal(SIGTSTP, SIG_IGN);
+	signal(SIGINT, ft_print_n);
+	term.fd_history = -1;
+	term.line = NULL;
+	term.history_cmd = NULL;
+	//read_file_history(&term); //хуета с доступом к файлу
+	while (1)
+	{
+		teminal(&term);
+		//free(term.line);
+	}
+	close(term.fd_history);
+	free(term.line);
 	return (0);
 }

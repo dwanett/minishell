@@ -5,3 +5,4 @@ minishell
 /.idea/
 *.a
 /.vscode/
+.history
