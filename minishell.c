@@ -107,11 +107,11 @@ void peremennie_sredi(char ***command, int flag)
 {
 	if (flag == 0)
 	{
-
+		//bash -c export
 	}
 	else
 	{
-
+		//bash -c unset
 	}
 }
 
@@ -136,6 +136,7 @@ void pars_not_def_command(char ***command, char *line, int i, char **not_def_com
 	//else if (!ft_strcmp(not_def_com[i], "unset"))
 	//	peremennie_sredi(command, 0);
 	//else if (!ft_strcmp(not_def_com[i], "env"))
+		//bash -c env
 }
 
 void command(char *line)
