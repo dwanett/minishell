@@ -6,3 +6,4 @@ minishell
 *.a
 /.vscode/
 .history
+test
