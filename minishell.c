@@ -32,14 +32,14 @@ void ft_add_history(t_terminal *term) // сохраниение истории �
 	term->history_cmd = tmp;
 }
 
-void read_file_history(t_terminal *term)
+void read_file_history(t_terminal *term) //чтение истории предыдущих сессий
 {
 	int l;
 	char buf[1];
 	char *str;
 
 	l = 1;
-	term->fd_history = open(".history", O_TRUNC); //хуета с доступом к файлу
+	term->fd_history = open(".history", O_RDWR);
 	if (term->fd_history == -1 && errno == 2)
 		return ;
 	else if (term->fd_history == -1)
@@ -68,7 +68,12 @@ void read_file_history(t_terminal *term)
 			}
 		}
 		if (l != 0)
+		{
+			add_history(term->line);
 			ft_add_history(term);
+		}
+		else
+			free(str);
 		term->line = NULL;
 		str = NULL;
 	}
@@ -82,7 +87,9 @@ void save_history(t_terminal *term) // сохранение истории в ф
 	if (tmp == NULL)
 		return ;
 	if (term->fd_history == -1)
-		term->fd_history = open(".history", O_TRUNC | O_CREAT); //хуета с доступом к файлу
+		term->fd_history = open(".history", O_CREAT | O_RDWR, S_IRWXU);
+	if (term->fd_history == -1)
+		term->fd_history = open(".history", O_TRUNC | O_RDWR);
 	if (term->fd_history == -1)
 	{
 		ft_putstr_fd(strerror(errno), 2);
@@ -101,9 +108,24 @@ void save_history(t_terminal *term) // сохранение истории в ф
 	}
 }
 
-void ft_exit(t_terminal *term) // выход их терминала и сохраниние истории
+void free_history(t_terminal *term)
+{
+	if (term->history_cmd == NULL)
+		return ;
+	while (term->history_cmd->next != NULL)
+	{
+		term->history_cmd = term->history_cmd->next;
+		free(term->history_cmd->prev->command);
+		free(term->history_cmd->prev);
+	}
+	free(term->history_cmd->command);
+	free(term->history_cmd);
+}
+
+void ft_exit(t_terminal *term) // выход из терминала и сохраниние истории
 {
 	save_history(term);
+	free_history(term);
 	ft_putstr_fd("exit\n", 1);
 	exit(0);
 }
@@ -115,16 +137,14 @@ void ft_print_n() // CTRL C
 
 void teminal(t_terminal *term) //чтение строк терминала
 {
-
 	term->line = readline("minishell$ ");
 	if (term->line == NULL || !ft_strncmp(term->line, "exit", 4))
 		ft_exit(term);
 	else if (ft_strcmp(term->line, "\0")) // если строка не пустая
-		ft_add_history(term);
-	//else if (!ft_strcmp(term->line, "\e[A"))
-	//	read_history(term, 0);
-	//else if (!ft_strcmp(term->line, "\e[B"))
-	//	read_history(term, 1);
+		{
+			ft_add_history(term);
+			add_history(term->line); //добавление истории для readline
+		}
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -136,13 +156,12 @@ int	main(int argc, char **argv, char **envp)
 	term.fd_history = -1;
 	term.line = NULL;
 	term.history_cmd = NULL;
-	//read_file_history(&term); //хуета с доступом к файлу
+	read_file_history(&term);
+	if (term.fd_history != -1)
+		close(term.fd_history);
+	term.fd_history = -1;
 	while (1)
-	{
 		teminal(&term);
-		//free(term.line);
-	}
 	close(term.fd_history);
-	free(term.line);
 	return (0);
 }

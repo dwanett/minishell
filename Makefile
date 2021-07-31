@@ -40,6 +40,7 @@ fclean:
 	@rm -f $(NAME)
 	@echo "\nDeleting trash..."
 	@rm -f *.out
+	@rm -f .history
 	@echo "\033[0m"
 
 re: fclean all
