@@ -169,10 +169,21 @@ void teminal(t_terminal *term) //чтение строк терминала
 	term->line = readline("minishell$ ");
 	if (term->line == NULL || !ft_strncmp(term->line, "exit", 4)) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
 		ft_exit(term);
-	else if (ft_strcmp(term->line, "\0") && ft_strcmp(term->line, term->history_cmd->command)) // если строка не пустая
+	else if (ft_strcmp(term->line, "\0")) // если строка не пустая
 	{
-		ft_add_history(term);
-		add_history(term->line); //добавление истории для readline
+		if (term->history_cmd)
+		{
+			if (ft_strcmp(term->line, term->history_cmd->command))
+			{
+				ft_add_history(term);
+				add_history(term->line);   //добавление истории для readline
+			}
+		}
+		else
+		{
+			ft_add_history(term);
+			add_history(term->line);
+		}
 	}
 	command(term->line);	//функция обработки команд
 }

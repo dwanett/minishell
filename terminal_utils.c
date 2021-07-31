@@ -28,7 +28,7 @@ void free_history(t_terminal *term)
 
 void ft_exit(t_terminal *term) // выход из терминала и сохраниние истории
 {
-	if (term->line && ft_strcmp(term->line, term->history_cmd->command))
+	if (term->line && (term->history_cmd && ft_strcmp(term->line, term->history_cmd->command)))
 		ft_add_history(term);
 	save_history(term);
 	free_history(term);
