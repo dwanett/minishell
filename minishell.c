@@ -215,7 +215,7 @@ int is_name(char *elem, int flag)
 	return (0);
 }
 
-void ft_unset(char ***command, t_terminal *term, int size_arg)
+void ft_unset(char ***command, t_terminal *term, int size_arg) // не всегда удаляет переменную (причина неизвестна)
 {
 	int i;
 
