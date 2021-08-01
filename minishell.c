@@ -17,7 +17,7 @@ int check_not_def_com(char *line, char **not_def_com) //Проверка ком�
 	int i;
 
 	i = 0;
-	while (i != 4)
+	while (i != 1)
 	{
 		if (!ft_strncmp(not_def_com[i], line, ft_strlen(not_def_com[i])))
 			return (i);
@@ -26,23 +26,41 @@ int check_not_def_com(char *line, char **not_def_com) //Проверка ком�
 	return (-1);
 }
 
-int check_def_com(char *command) //Проверка /bin
+int check_def_com(char *command, char **path) //Проверка /bin
 {
 	DIR *dir;
 	struct dirent *dp;
+	char **patch_env;
+	int i;
+	int j;
 
-	dir = opendir("/bin");
-	dp = readdir(dir);
-	while (dp != NULL)
+	i = 0;
+	j = 0;
+	patch_env = ft_split(getenv("PATH"), ':'); // получение путей из переменной среды PATH
+	while (patch_env[i] != NULL)
 	{
-		if (!ft_strcmp(command, dp->d_name))
-		{
-			closedir(dir);
-			return (0);
-		}
+		dir = opendir(patch_env[i]); // открываем каждую директорию и проверяем наличие команды
 		dp = readdir(dir);
+		while (dp != NULL)
+		{
+			if (!ft_strcmp(command, dp->d_name))
+			{
+				closedir(dir);
+				*path = patch_env[i];
+				while (patch_env[j] != NULL)
+				{
+					if (i != j)
+						free(patch_env[j]);
+					j++;
+				}
+				free(patch_env);
+				return (0);
+			}
+			dp = readdir(dir);
+		}
+		closedir(dir);
+		i++;
 	}
-	closedir(dir);
 	return (1);
 }
 
@@ -58,41 +76,76 @@ void utils_for_civichki(char ***command)
 	}
 }
 
+int is_path(char *command)
+{
+	int i;
+
+	i = 0;
+	while (command[i] != '\0')
+	{
+		if (command[i] == '/')
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
 void pars_def_command(char ***command, char *line) // Обработка команд /bin или не команд // Не работает с переменными среды
 {
 	char *tmp;
 	pid_t pid;
 	int l;
 	int status;
+	char *path;
 
 	*command = ft_split(line, ' ');
-	if (check_def_com(**command)) //это команда? (если есть файл в /bin - это команда)
+	if (!is_path(**command)) // Если это не путь то
 	{
-		ft_putstr_fd(line, 2);
-		ft_putstr_fd(": command not found", 2);
-		ft_putstr_fd("\n", 2);
-		return ;
+		if (check_def_com(**command, &path)) //это команда? (если есть файл в /bin - это команда)
+		{
+			ft_putstr_fd(line, 2);
+			ft_putstr_fd(": command not found", 2);
+			ft_putstr_fd("\n", 2);
+			return ;
+		}
+		tmp = ft_strjoin(path, "/");
+		free(path);
+		path = tmp;
+		tmp = ft_strjoin(path, **command);
+		free(**command);
+		**command = tmp;
+		free(path);
 	}
-	tmp = ft_strjoin("/bin/", **command);
-	free(**command);
-	**command = tmp;
 	utils_for_civichki(command);
 	pid = fork(); // создание потока для выполения команды
 	if (pid == 0)
 		l = execve(*command[0], *command, NULL);
 	if (l == -1)
+	{
+		ft_putstr_fd(*command[0], 2);
+		ft_putstr_fd(": ", 2);
+		ft_putstr_fd(strerror(errno), 2);
+		ft_putstr_fd("\n", 2);
 		exit(errno);
+	}
 	waitpid(pid, &status, 0);
 }
 
-void ft_cd(char ***command, int i) // команда cd // Не работает без аргументов
+void ft_cd(char ***command, int i) // команда cd
 {
+	int ret;
+
+	ret = 0;
 	if (i >= 3)
 	{
 		ft_putstr_fd("cd: too many arguments\n", 2);
 		return ;
 	}
-	if (chdir(*(*command + 1)) == -1)
+	if (i == 1)
+		ret = chdir(getenv("HOME"));
+	else
+		ret = chdir(*(*command + 1));
+	if (ret == -1)
 	{
 		ft_putstr_fd("cd: ", 2);
 		ft_putstr_fd(*(*command + 1), 2);
@@ -141,20 +194,20 @@ void pars_not_def_command(char ***command, char *line, int i, char **not_def_com
 
 void command(char *line)
 {
-	char *not_def_com[4];
+	char *not_def_com[1];
 	char **command;
 	int i;
 	int ret;
 
 	i = 0;
 	not_def_com[0] = "cd";
-	not_def_com[1] = "export";
-	not_def_com[2] = "unset";
-	not_def_com[3] = "env";
+	//not_def_com[1] = "export";
+	//not_def_com[2] = "unset";
+	//not_def_com[3] = "env";
 	ret = check_not_def_com(line, not_def_com);
 	if (ret != -1)									// проверка команд (они не дефолтные?)
 		pars_not_def_command(&command, line, ret, not_def_com); // обработка не дефолтных команд
-	else											// Они не дефолтные! И есть в папке /bin. Или это не команды.
+	else									// Они не дефолтные! И есть в папке /bin. Или это не команды.
 		pars_def_command(&command, line);
 	while (command[i] != NULL)
 	{
@@ -184,11 +237,11 @@ void teminal(t_terminal *term) //чтение строк терминала
 			ft_add_history(term);
 			add_history(term->line);
 		}
+		command(term->line); //функция обработки команд
 	}
-	command(term->line);	//функция обработки команд
 }
 
-int	main(int argc, char **argv, char **envp)
+int main(int argc, char **argv, char **envp)
 {
 	t_terminal term;
 
@@ -206,3 +259,6 @@ int	main(int argc, char **argv, char **envp)
 	close(term.fd_history);
 	return (0);
 }
+// НЕ РАБОТАЮТ КОМАНДЫ С ПРЕМЕННЫМИ СРЕДЫ		ЗАДАЧА 1
+// НЕ РАБОТАЕТ ПЕРЕНАПРПВЛЕНИЕ ВВОДА И ВЫВОДА	ЗАДАЧА 2
+// НЕ РАБОТАЮТ ПАЙПЫ							ЗАДАЧА 3
