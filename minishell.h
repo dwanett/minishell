@@ -34,9 +34,16 @@ typedef struct s_list_histoy
 	struct s_list_histoy	*next;
 }			t_list_histoy;
 
+typedef struct s_list_env
+{
+	char		*line;
+	struct s_list_env *next;
+}			t_list_env;
+
 typedef struct s_terminal
 {
 	char			*line;
+	t_list_env 		*env;
 	int				fd_history;
 	t_list_histoy	*history_cmd;
 }			t_terminal;

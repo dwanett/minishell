@@ -23,6 +23,7 @@ typedef struct s_list
 }					t_list;
 void				*ft_memset(void *destination, int c, size_t n);
 int					ft_strlen(const char *str);
+int					ft_strclen(const char *str, char c);
 void				ft_bzero(void *s, size_t n);
 void				*ft_memcpy(void *dst, const void *src, size_t n);
 void				*ft_memccpy(void *dst, const void *src, int c, size_t n);

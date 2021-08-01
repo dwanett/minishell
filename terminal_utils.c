@@ -26,12 +26,26 @@ void free_history(t_terminal *term)
 	free(term->history_cmd);
 }
 
-void ft_exit(t_terminal *term) // выход из терминала и сохраниние истории
+void free_env(t_list_env *env)
+{
+	t_list_env *tmp;
+
+	while (env != NULL)
+	{
+		tmp = env;
+		env = env->next;
+		free(tmp->line);
+		free(tmp);
+	}
+}
+
+void ft_exit(t_terminal *term) // выход из терминала и сохранение истории
 {
 	if (term->line && (term->history_cmd && ft_strcmp(term->line, term->history_cmd->command)))
 		ft_add_history(term);
 	save_history(term);
-	free_history(term);
+	free_env(term->env);
+	//free_history(term);
 	ft_putstr_fd("exit\n", 1);
 	exit(0);
 }

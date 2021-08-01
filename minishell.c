@@ -17,7 +17,7 @@ int check_not_def_com(char *line, char **not_def_com) //Проверка ком�
 	int i;
 
 	i = 0;
-	while (i != 1)
+	while (i != 4)
 	{
 		if (!ft_strncmp(not_def_com[i], line, ft_strlen(not_def_com[i])))
 			return (i);
@@ -76,7 +76,7 @@ void utils_for_civichki(char ***command)
 	}
 }
 
-int is_path(char *command)
+int is_path(const char *command)//Это путь?
 {
 	int i;
 
@@ -135,7 +135,6 @@ void ft_cd(char ***command, int i) // команда cd
 {
 	int ret;
 
-	ret = 0;
 	if (i >= 3)
 	{
 		ft_putstr_fd("cd: too many arguments\n", 2);
@@ -156,27 +155,176 @@ void ft_cd(char ***command, int i) // команда cd
 	}
 }
 
-void peremennie_sredi(char ***command, int flag)
+void ft_env(t_terminal *term, int flag)
 {
-	if (flag == 0)
+	t_list_env *tmp;
+
+	tmp = term->env;
+	while (tmp != NULL)
 	{
-		//bash -c export
-	}
-	else
-	{
-		//bash -c unset
+		if (flag == 1)
+		{
+			ft_putstr_fd("declare -x ", 1); //есть еще кавычки //тестируй без аргументов команду export
+		}
+		ft_putstr_fd(tmp->line, 1);
+		ft_putstr_fd("\n", 1);
+		tmp = tmp->next;
 	}
 }
 
-void pars_not_def_command(char ***command, char *line, int i, char **not_def_com) // Обработка не дефолтных
+void del_element_env(char *elem, t_terminal *term)//Удаление переменной
+{
+	t_list_env *tmp;
+	t_list_env *prev;
+
+	tmp = term->env;
+	prev = tmp;
+	while (tmp != NULL)
+	{
+		if (!ft_strncmp(tmp->line, elem, ft_strclen(elem, '=')))
+		{
+			if (prev == term->env)
+				term->env = term->env->next;
+			else
+			{
+				prev->next = tmp->next;
+				free(tmp->line);
+				free(tmp);
+				tmp = prev;
+			}
+			break ;
+		}
+		prev = tmp;
+		tmp = tmp->next;
+	}
+}
+
+int is_name(char *elem, int flag)
+{
+	int i;
+
+	i = 0;
+	while (elem[i] != '\0')
+	{
+		if (flag == 1 && elem[i] == '=')
+			break ;
+		if (!ft_isalpha(elem[i]))
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+void ft_unset(char ***command, t_terminal *term, int size_arg)
+{
+	int i;
+
+	i = 1;
+	while (i != size_arg)
+	{
+		if (!is_name(*(*command + i), 0))
+			del_element_env(*(*command + i), term);//Удаление переменной
+		else
+		{
+			ft_putstr_fd("unset: ", 2);
+			ft_putstr_fd(*(*command + i), 2);
+			ft_putstr_fd(": ", 2);
+			ft_putstr_fd("not a valid identifier", 2);
+			ft_putstr_fd("\n", 2);
+		}
+		i++;
+	}
+}
+
+int is_new_perem_export(char *peremen, t_list_env *env)//Проверка на дубликат переменной
+{
+	t_list_env *tmp;
+
+	tmp = env;
+	while (tmp != NULL)
+	{
+		if (ft_strncmp(tmp->line, peremen, ft_strclen(peremen, '=')))
+			return (1);
+		tmp = tmp->next;
+	}
+	return (0);
+}
+
+int is_ravenstvo(char *peremen)//проверка на символ =
+{
+	int i;
+	int j;
+
+	i = 0;
+	j = 0;
+	while (peremen[i] != '\0')
+	{
+		if (peremen[i] == '=')
+			j = i;
+		i++;
+	}
+	if (j != 0)
+		return (1);
+	return (0);
+}
+
+void ft_export(char ***command, t_terminal *term, int size_arg)
+{
+	t_list_env *new_env;
+	t_list_env *tmp;
+	int i;
+
+	i = 1;
+	tmp = term->env;
+	if (!*(*command + 1)) // если нет аргументов
+	{
+		ft_env(term, 1);
+		return ;
+	}
+	while (i != size_arg)
+	{
+		term->env = tmp;
+		if (is_ravenstvo(*(*command + i))) //есть ли равно?
+		{
+			if (!is_name(*(*command + i), 1)) //имя состоит из букв?
+			{
+				if (is_new_perem_export(*(*command + i),
+						tmp)) //если такая переменная уже есть, то удалить ее
+					del_element_env(*(*command + i), term);//Удаление переменной
+				while (term->env->next != NULL)
+					term->env = term->env->next;
+				new_env = (t_list_env *) malloc(sizeof(t_list_env));
+				new_env->line = ft_strdup(*(*command + i));
+				new_env->next = NULL;
+				term->env->next = new_env;
+			}
+			else
+			{
+				ft_putstr_fd("export: ", 2);
+				ft_putstr_fd(*(*command + i), 2);
+				ft_putstr_fd(": ", 2);
+				ft_putstr_fd("not a valid identifier", 2);
+				ft_putstr_fd("\n", 2);
+			}
+		}
+		i++;
+	}
+	term->env = tmp;
+}
+
+void pars_not_def_command(char ***command, t_terminal *term, int i, char **not_def_com) // Обработка не дефолтных
 {
 	char **tmp;
 	int j;
+	int size_arg;
 
 	j = 0;
-	*command = ft_split(line, ' ');
+	size_arg = 0;
+	*command = ft_split(term->line, ' ');
 	utils_for_civichki(command);
 	tmp = *command;
+	while (*(*command + size_arg) != NULL)
+		size_arg++;
 	while (tmp != NULL && *tmp != NULL)
 	{
 		tmp++;
@@ -184,31 +332,31 @@ void pars_not_def_command(char ***command, char *line, int i, char **not_def_com
 	}
 	if (!ft_strncmp(not_def_com[i], "cd", 2))
 		ft_cd(command, j);
-	//else if (!ft_strcmp(not_def_com[i], "export"))
-	//	peremennie_sredi(command, 0);
-	//else if (!ft_strcmp(not_def_com[i], "unset"))
-	//	peremennie_sredi(command, 0);
-	//else if (!ft_strcmp(not_def_com[i], "env"))
-		//bash -c env
+	else if (!ft_strcmp(not_def_com[i], "env"))
+		ft_env(term, 0);
+	else if (!ft_strcmp(not_def_com[i], "export"))
+		ft_export(command, term, size_arg);
+	else if (!ft_strcmp(not_def_com[i], "unset"))
+		ft_unset(command, term, size_arg);
 }
 
-void command(char *line)
+void command(t_terminal *term)
 {
-	char *not_def_com[1];
+	char *not_def_com[4];
 	char **command;
 	int i;
 	int ret;
 
 	i = 0;
 	not_def_com[0] = "cd";
-	//not_def_com[1] = "export";
-	//not_def_com[2] = "unset";
-	//not_def_com[3] = "env";
-	ret = check_not_def_com(line, not_def_com);
+	not_def_com[1] = "export";
+	not_def_com[2] = "unset";
+	not_def_com[3] = "env";
+	ret = check_not_def_com(term->line, not_def_com);
 	if (ret != -1)									// проверка команд (они не дефолтные?)
-		pars_not_def_command(&command, line, ret, not_def_com); // обработка не дефолтных команд
+		pars_not_def_command(&command, term, ret, not_def_com); // обработка не дефолтных команд
 	else									// Они не дефолтные! И есть в папке /bin. Или это не команды.
-		pars_def_command(&command, line);
+		pars_def_command(&command, term->line);
 	while (command[i] != NULL)
 	{
 		free(command[i]);
@@ -237,7 +385,35 @@ void teminal(t_terminal *term) //чтение строк терминала
 			ft_add_history(term);
 			add_history(term->line);
 		}
-		command(term->line); //функция обработки команд
+		command(term); //функция обработки команд
+	}
+}
+
+void init_env(t_list_env **env, char **envp)
+{
+	t_list_env *tmp;
+	int i;
+
+	i = 0;
+	while (envp[i] != NULL)
+		i++;
+	*env = NULL;
+	i--;
+	while(i >= 0)
+	{
+		tmp = (t_list_env*)malloc(sizeof(t_list_env));
+		if (tmp == NULL)
+		{
+			ft_putstr_fd(strerror(errno), 2);
+			exit(errno);
+		}
+		tmp->line = ft_strdup(envp[i]);
+		if (*env == NULL)
+			tmp->next = NULL;
+		else
+			tmp->next = *env;
+		*env = tmp;
+		i--;
 	}
 }
 
@@ -245,6 +421,9 @@ int main(int argc, char **argv, char **envp)
 {
 	t_terminal term;
 
+	init_env(&term.env, envp);
+	(void)argc;
+	(void)argv;
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGINT, ft_print_n);
 	term.fd_history = -1;
@@ -259,6 +438,7 @@ int main(int argc, char **argv, char **envp)
 	close(term.fd_history);
 	return (0);
 }
-// НЕ РАБОТАЮТ КОМАНДЫ С ПРЕМЕННЫМИ СРЕДЫ		ЗАДАЧА 1
-// НЕ РАБОТАЕТ ПЕРЕНАПРПВЛЕНИЕ ВВОДА И ВЫВОДА	ЗАДАЧА 2
-// НЕ РАБОТАЮТ ПАЙПЫ							ЗАДАЧА 3
+// ВСЕ КОМАНДЫ РАБОТАЮТ. НАДО ТЕСТИРОВАТЬ РАЗНЫЕ КЕЙСЫ. ДОБАВИТЬ ОБРАБОТКУ ВСЯКИХ СИМВОЛОВ ЗАДАЧА №1
+// ЕСТЬ ЕБУЧИЙ ЛИК, КОТОРЫЙ Я НЕ МОГУ ПОФИКСТИЬ !!!!!!!!!!!!!!!!!!!!!!!!!!!
+// НЕ РАБОТАЕТ ПЕРЕНАПРПВЛЕНИЕ ВВОДА И ВЫВОДА	ЗАДАЧА №2
+// НЕ РАБОТАЮТ ПАЙПЫ							ЗАДАЧА №3

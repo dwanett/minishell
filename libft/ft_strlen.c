@@ -19,3 +19,17 @@ int	ft_strlen(const char *str)
 		i++;
 	return (i);
 }
+
+int	ft_strclen(const char *str, char c)
+{
+	int	i;
+
+	i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] == c)
+			break ;
+		i++;
+	}
+	return (i);
+}
