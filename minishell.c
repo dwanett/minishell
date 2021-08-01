@@ -208,7 +208,7 @@ int is_name(char *elem, int flag)
 	{
 		if (flag == 1 && elem[i] == '=')
 			break ;
-		if (!ft_isalpha(elem[i]))
+		if (!ft_isalpha(elem[i]) && elem[i] != '_')
 			return (1);
 		i++;
 	}
@@ -291,12 +291,15 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 				if (is_new_perem_export(*(*command + i),
 						tmp)) //если такая переменная уже есть, то удалить ее
 					del_element_env(*(*command + i), term);//Удаление переменной
-				while (term->env->next != NULL)
+				while (term->env && term->env->next != NULL)
 					term->env = term->env->next;
 				new_env = (t_list_env *) malloc(sizeof(t_list_env));
 				new_env->line = ft_strdup(*(*command + i));
 				new_env->next = NULL;
-				term->env->next = new_env;
+				if (term->env)
+					term->env->next = new_env;
+				else
+					tmp = new_env;
 			}
 			else
 			{
@@ -348,7 +351,7 @@ void command(t_terminal *term)
 	int ret;
 
 	i = 0;
-	not_def_com[0] = "cd";
+	not_def_com[0] = "cd"; //возможно эти команды надо делать отдельным процессом, но хз
 	not_def_com[1] = "export";
 	not_def_com[2] = "unset";
 	not_def_com[3] = "env";
