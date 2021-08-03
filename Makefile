@@ -7,7 +7,8 @@ LIBFT = make -C libft
 
 SRC =	minishell.c\
 		terminal_utils.c\
-		terminal_history.c
+		terminal_history.c\
+		env.c
 
 SRCS = $(SRC)
 

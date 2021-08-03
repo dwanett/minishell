@@ -64,16 +64,171 @@ int check_def_com(char *command, char **path) //Проверка /bin
 	return (1);
 }
 
-void utils_for_civichki(char ***command)
+int check_symbol_close(char *command, char c, int *ferst_pos, int *last_pos) // проверка количества вхождений символов
 {
-	char **tmp2;
+	int i;
+	int count;
 
-	if (*(*command + 1) != NULL)
+	i = 0;
+	*ferst_pos = 0;
+	*last_pos = 0;
+	count = 0;
+	while (command[i] != '\0')
 	{
-		tmp2 = ft_split(*(*command + 1), '"');
-		free(*(*command + 1));
-		*(*command + 1) = *tmp2;
+		if (command[i] == c && *ferst_pos == 0 && count == 0)
+		{
+			*ferst_pos = i;
+			//if (*ferst_pos == 0)
+			//	*ferst_pos++;
+		}
+		else if (command[i] == c && *last_pos == 0)
+			*last_pos = i;
+		if (command[i] == c)
+			count++;
+		i++;
 	}
+	if ((count % 2 == 0) || (*ferst_pos == 0 && *last_pos == 0))
+		return (count);
+	return (-1);
+}
+
+/*void del_symbol(char **command, char c)
+{
+	char **tmp_split;
+	char *tmp_join;
+	int i;
+
+	if (*command != NULL)
+	{
+		tmp_split = ft_split(*command , c);
+		free(*command);
+	}
+	tmp_join = ft_strjoin(tmp_split[0], tmp_split[1]);
+	free(tmp_split[0]);
+	free(tmp_split[1]);
+	i = 2;
+	while(tmp_split[i] != NULL)
+	{
+		*command = ft_strjoin(tmp_join, tmp_split[i]);
+		free(tmp_join);
+		free(tmp_split[i]);
+		tmp_join = *command;
+		i++;
+	}
+}*/
+
+int ligic_cavichki(char ***command, int count_one, int count_two) //как сломать мозг(функция для проверки закрытия кавычек)
+{
+	int ferst_pos_one;	// первое вхождение '
+	int last_pos_one;	// второе вхождение '
+	int ferst_pos_two;	// первое вхождение "
+	int last_pos_two;	// второе вхождение "
+	int begin;
+
+	begin = -1;
+	while (count_one > 2 || count_two > 2) //А теперь повертим строку на хую
+	{
+		if (count_one != 3)
+		{
+			if (begin == -1)
+				begin = 0;
+			if ((last_pos_one < last_pos_two && last_pos_one != 0) || last_pos_two == 0)
+				begin += last_pos_one;
+			else
+				begin += last_pos_two;
+		}
+		count_two = check_symbol_close((*command)[0] + begin + 1, '"', &ferst_pos_two, &last_pos_two);	// закрывается ли "
+		count_one = check_symbol_close((*command)[0] + begin + 1, '\'', &ferst_pos_one, &last_pos_one);	// закрывается ли '
+		if (count_one == -1 && (ferst_pos_one > last_pos_two || count_two == 0))
+			return (1);
+		if (count_two == -1 && (ferst_pos_two > last_pos_one || count_one == 0))
+			return (1);
+		if (count_one != 0 && (ferst_pos_one < ferst_pos_two && last_pos_one < last_pos_two && ferst_pos_two < last_pos_one && count_two != -1))
+			return (1);
+		if (count_two != 0 && (ferst_pos_two < ferst_pos_one && last_pos_two < last_pos_one && ferst_pos_one < last_pos_two && count_one != -1))
+			return (1);
+		if (count_one == -1 && count_two == -1)
+			count_two = 4;
+	}
+	return (0); //если эта чертова штука дошла сюда, то строка норм
+}
+
+int count_symbol_str(char *str, char c)
+{
+	int i;
+	int count;
+
+	i = 0;
+	count = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] == c)
+			count++;
+		i++;
+	}
+	return (count);
+}
+
+int pars_cavichki(char ***command, t_terminal *term)
+{
+	int i;
+	int j;
+	char *tmp;
+	int size;
+	int count_one;
+	int count_two;
+	int flag;
+
+	i = 0;
+	j = 0;
+	if (ligic_cavichki(command, 3, 3)) // Порно-функция
+	{
+		ft_putstr_fd((*command)[0], term->fd.error);
+		ft_putstr_fd(": ", term->fd.error);
+		ft_putstr_fd("error syntax", term->fd.error);
+		ft_putstr_fd("\n", term->fd.error);
+		exit(-1);
+	}			// Если порно-функция не выдала ошибку(а ты фартовый тип), то идем дальше и гуляем по кавычки и копируем ток нужные
+	count_one = count_symbol_str((*command)[0], '\'');
+	count_two = count_symbol_str((*command)[0], '"');
+	if (count_one % 2 != 0)
+		count_one--;
+	if (count_two % 2 != 0)
+		count_two--;
+	size = ft_strlen((*command)[0]) - count_one - count_two;
+	tmp = (char *)malloc(sizeof(char) * size + 1);
+	flag = 1;
+	count_one = 0;
+	count_two = 0;
+	while ((*(*command))[i] != '\0')
+	{
+		if ((*(*command))[i] == '"' && count_one == 0)
+		{
+			if (count_two != 1)
+				count_two++;
+			else
+				count_two = 0;
+			flag = 2;
+		}
+		if ((*(*command))[i] == '\'' && count_two == 0)
+		{
+			if (count_one != 1)
+				count_one++;
+			else
+				count_one = 0;
+			flag = 1;
+		}
+		if (!(flag == 1 && (*(*command))[i] == '\'') && !(flag == 2 && (*(*command))[i] == '"'))
+		{
+			tmp[j] = (*(*command))[i];
+			j++;
+		}
+		i++;
+	} // Копи кавычек завершено
+	tmp[j] = '\0';
+	free((*command)[0]);
+	(*command)[0] = tmp;
+	return (0);
 }
 
 int is_path(const char *command)//Это путь?
@@ -90,7 +245,7 @@ int is_path(const char *command)//Это путь?
 	return (0);
 }
 
-void pars_def_command(char ***command, char *line) // Обработка команд /bin или не команд // Не работает с переменными среды
+void pars_def_command(char ***command, t_terminal *term) // Обработка команд /bin или не команд // Не работает с переменными среды
 {
 	char *tmp;
 	pid_t pid;
@@ -98,14 +253,13 @@ void pars_def_command(char ***command, char *line) // Обработка ком�
 	int status;
 	char *path;
 
-	*command = ft_split(line, ' ');
 	if (!is_path(**command)) // Если это не путь то
 	{
 		if (check_def_com(**command, &path)) //это команда? (если есть файл в /bin - это команда)
 		{
-			ft_putstr_fd(line, 2);
-			ft_putstr_fd(": command not found", 2);
-			ft_putstr_fd("\n", 2);
+			ft_putstr_fd(*command[0], term->fd.error);
+			ft_putstr_fd(": command not found", term->fd.error);
+			ft_putstr_fd("\n", term->fd.error);
 			return ;
 		}
 		tmp = ft_strjoin(path, "/");
@@ -116,28 +270,28 @@ void pars_def_command(char ***command, char *line) // Обработка ком�
 		**command = tmp;
 		free(path);
 	}
-	utils_for_civichki(command);
+	//utils_for_cavichki(command);
 	pid = fork(); // создание потока для выполения команды
 	if (pid == 0)
 		l = execve(*command[0], *command, NULL);
 	if (l == -1)
 	{
-		ft_putstr_fd(*command[0], 2);
-		ft_putstr_fd(": ", 2);
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd("\n", 2);
+		ft_putstr_fd(*command[0], term->fd.error);
+		ft_putstr_fd(": ", term->fd.error);
+		ft_putstr_fd(strerror(errno), term->fd.error);
+		ft_putstr_fd("\n", term->fd.error);
 		exit(errno);
 	}
 	waitpid(pid, &status, 0);
 }
 
-void ft_cd(char ***command, int i) // команда cd
+void ft_cd(char ***command, int i, t_terminal *term) // команда cd
 {
 	int ret;
 
 	if (i >= 3)
 	{
-		ft_putstr_fd("cd: too many arguments\n", 2);
+		ft_putstr_fd("cd: too many arguments\n", term->fd.error);
 		return ;
 	}
 	if (i == 1)
@@ -146,176 +300,16 @@ void ft_cd(char ***command, int i) // команда cd
 		ret = chdir(*(*command + 1));
 	if (ret == -1)
 	{
-		ft_putstr_fd("cd: ", 2);
-		ft_putstr_fd(*(*command + 1), 2);
-		ft_putstr_fd(": ", 2);
-		ft_putstr_fd(strerror(errno), 2);
-		ft_putstr_fd("\n", 2);
+		ft_putstr_fd("cd: ", term->fd.error);
+		ft_putstr_fd(*(*command + 1), term->fd.error);
+		ft_putstr_fd(": ", term->fd.error);
+		ft_putstr_fd(strerror(errno), term->fd.error);
+		ft_putstr_fd("\n", term->fd.error);
 		return ;
 	}
 }
 
-void ft_env(t_terminal *term, int flag)
-{
-	t_list_env *tmp;
-
-	tmp = term->env;
-	while (tmp != NULL)
-	{
-		if (flag == 1)
-		{
-			ft_putstr_fd("declare -x ", 1); //есть еще кавычки //тестируй без аргументов команду export
-		}
-		ft_putstr_fd(tmp->line, 1);
-		ft_putstr_fd("\n", 1);
-		tmp = tmp->next;
-	}
-}
-
-void del_element_env(char *elem, t_terminal *term)//Удаление переменной
-{
-	t_list_env *tmp;
-	t_list_env *prev;
-
-	tmp = term->env;
-	prev = tmp;
-	while (tmp != NULL)
-	{
-		if (!ft_strncmp(tmp->line, elem, ft_strclen(elem, '=')))
-		{
-			if (prev == term->env)
-				term->env = term->env->next;
-			else
-			{
-				prev->next = tmp->next;
-				free(tmp->line);
-				free(tmp);
-				tmp = prev;
-			}
-			break ;
-		}
-		prev = tmp;
-		tmp = tmp->next;
-	}
-}
-
-int is_name(char *elem, int flag)
-{
-	int i;
-
-	i = 0;
-	while (elem[i] != '\0')
-	{
-		if (flag == 1 && elem[i] == '=')
-			break ;
-		if (!ft_isalpha(elem[i]) && elem[i] != '_')
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
-void ft_unset(char ***command, t_terminal *term, int size_arg) // не всегда удаляет переменную (причина неизвестна)
-{
-	int i;
-
-	i = 1;
-	while (i != size_arg)
-	{
-		if (!is_name(*(*command + i), 0))
-			del_element_env(*(*command + i), term);//Удаление переменной
-		else
-		{
-			ft_putstr_fd("unset: ", 2);
-			ft_putstr_fd(*(*command + i), 2);
-			ft_putstr_fd(": ", 2);
-			ft_putstr_fd("not a valid identifier", 2);
-			ft_putstr_fd("\n", 2);
-		}
-		i++;
-	}
-}
-
-int is_new_perem_export(char *peremen, t_list_env *env)//Проверка на дубликат переменной
-{
-	t_list_env *tmp;
-
-	tmp = env;
-	while (tmp != NULL)
-	{
-		if (ft_strncmp(tmp->line, peremen, ft_strclen(peremen, '=')))
-			return (1);
-		tmp = tmp->next;
-	}
-	return (0);
-}
-
-int is_ravenstvo(char *peremen)//проверка на символ =
-{
-	int i;
-	int j;
-
-	i = 0;
-	j = 0;
-	while (peremen[i] != '\0')
-	{
-		if (peremen[i] == '=')
-			j = i;
-		i++;
-	}
-	if (j != 0)
-		return (1);
-	return (0);
-}
-
-void ft_export(char ***command, t_terminal *term, int size_arg)
-{
-	t_list_env *new_env;
-	t_list_env *tmp;
-	int i;
-
-	i = 1;
-	tmp = term->env;
-	if (!*(*command + 1)) // если нет аргументов
-	{
-		ft_env(term, 1);
-		return ;
-	}
-	while (i != size_arg)
-	{
-		term->env = tmp;
-		if (is_ravenstvo(*(*command + i))) //есть ли равно?
-		{
-			if (!is_name(*(*command + i), 1)) //имя состоит из букв?
-			{
-				if (is_new_perem_export(*(*command + i),
-						tmp)) //если такая переменная уже есть, то удалить ее
-					del_element_env(*(*command + i), term);//Удаление переменной
-				while (term->env && term->env->next != NULL)
-					term->env = term->env->next;
-				new_env = (t_list_env *) malloc(sizeof(t_list_env));
-				new_env->line = ft_strdup(*(*command + i));
-				new_env->next = NULL;
-				if (term->env)
-					term->env->next = new_env;
-				else
-					tmp = new_env;
-			}
-			else
-			{
-				ft_putstr_fd("export: ", 2);
-				ft_putstr_fd(*(*command + i), 2);
-				ft_putstr_fd(": ", 2);
-				ft_putstr_fd("not a valid identifier", 2);
-				ft_putstr_fd("\n", 2);
-			}
-		}
-		i++;
-	}
-	term->env = tmp;
-}
-
-void pars_not_def_command(char ***command, t_terminal *term, int i, char **not_def_com) // Обработка не дефолтных
+void pars_not_def_command(char ***command, t_terminal *term, int i) // Обработка не дефолтных
 {
 	char **tmp;
 	int j;
@@ -323,8 +317,6 @@ void pars_not_def_command(char ***command, t_terminal *term, int i, char **not_d
 
 	j = 0;
 	size_arg = 0;
-	*command = ft_split(term->line, ' ');
-	utils_for_civichki(command);
 	tmp = *command;
 	while (*(*command + size_arg) != NULL)
 		size_arg++;
@@ -333,21 +325,118 @@ void pars_not_def_command(char ***command, t_terminal *term, int i, char **not_d
 		tmp++;
 		j++;
 	}
-	if (!ft_strncmp(not_def_com[i], "cd", 2))
-		ft_cd(command, j);
-	else if (!ft_strcmp(not_def_com[i], "env"))
-		ft_env(term, 0);
-	else if (!ft_strcmp(not_def_com[i], "export"))
+	if (i == 0)
+		ft_cd(command, j, term);
+	else if (i == 1)
 		ft_export(command, term, size_arg);
-	else if (!ft_strcmp(not_def_com[i], "unset"))
+	else if (i == 2)
 		ft_unset(command, term, size_arg);
+	else if (i == 3)
+		ft_env(term, 0);
+}
+
+int ft_size_matrix_and_trim(char **matrix, char *c)
+{
+	int i;
+	char *tmp;
+
+	i = 0;
+	while (matrix[i] != NULL)
+	{
+		if (c)
+		{
+			tmp = matrix[i];
+			matrix[i] = ft_strtrim(tmp, c);
+			free(tmp);
+		}
+		i++;
+	}
+	return (i);
+}
+
+char *serch_env(char *name, t_terminal *term, int *i)
+{
+	t_list_env *tmp;
+
+
+	tmp = term->env;
+	while (tmp != NULL)
+	{
+		*i = ft_strclen(tmp->line, '=');
+		if (!ft_strncmp(name, tmp->line, *i))
+		{
+			return (tmp->line + *i + 1);
+		}
+		tmp = tmp->next;
+	}
+	return (NULL);
+}
+
+
+void pars_env_elem(t_terminal *term, char ***command_cur)
+{
+	int i;
+	int j;
+	int point;
+	char *tmp;
+	char *tmp_2;
+	int size_name;
+
+	i = count_symbol_str(*(*command_cur), '$');
+	j = 1;
+	point = -1;
+	while (j <= i)
+	{
+		point = ft_strcnlen(*(*command_cur), '$', j);
+		if (ft_isalpha(*(*(*command_cur) + point + 1)))
+		{
+			if (count_symbol_str(*(*command_cur) + point + 1, '\'') == 0
+				|| (!(ft_strclen(*(*command_cur), '\'') < point)
+				&& (ft_strcnlen(*(*command_cur), '\'', 2) > point)))
+			{
+				tmp = ft_strndup(*(*command_cur), point);
+				tmp_2 = *(*command_cur);
+				*(*command_cur) = ft_strjoin(tmp, serch_env(*(*command_cur) + point + 1, term, &size_name));
+				free(tmp);
+				tmp = ft_strdup(tmp_2 + point + 1 + size_name);
+				free(tmp_2);
+				tmp_2 = *(*command_cur);
+				*(*command_cur) = ft_strjoin(tmp_2, tmp);
+				free(tmp);
+				free(tmp_2);
+			}
+		}
+		j++;
+	}
+}
+
+void pre_pars(t_terminal *term, char ****command_pipe)
+{
+	int size;
+	int i;
+	char **tmp;
+
+	i = 0;
+	tmp = ft_split(term->line, '|');
+	size = ft_size_matrix_and_trim(tmp, " ");
+	pars_env_elem(term, &tmp); //ДолларЧееек // Такую шайтан функции продолжаются(такая хуета там написана, что смэрть)
+	pars_cavichki(&tmp, term); // Чавички надо?
+	*command_pipe = (char ***)malloc(sizeof(char**) * (size + 1));
+	while (i != size)
+	{
+		(*command_pipe)[i] = ft_split(tmp[i], ' ');
+		i++;
+	}
+	(*command_pipe)[i] = NULL;
 }
 
 void command(t_terminal *term)
 {
 	char *not_def_com[4];
-	char **command;
+	char ***command_pipe;
+	char **command_cur;
 	int i;
+	int j;
 	int ret;
 
 	i = 0;
@@ -355,21 +444,36 @@ void command(t_terminal *term)
 	not_def_com[1] = "export";
 	not_def_com[2] = "unset";
 	not_def_com[3] = "env";
-	ret = check_not_def_com(term->line, not_def_com);
-	if (ret != -1)									// проверка команд (они не дефолтные?)
-		pars_not_def_command(&command, term, ret, not_def_com); // обработка не дефолтных команд
-	else									// Они не дефолтные! И есть в папке /bin. Или это не команды.
-		pars_def_command(&command, term->line);
-	while (command[i] != NULL)
+	pre_pars(term, &command_pipe);
+	while (command_pipe[i] != NULL)
 	{
-		free(command[i]);
+		j = 0;
+		command_cur = command_pipe[i];
+		ret = check_not_def_com(*command_cur, not_def_com);
+		if (ret != -1)									// проверка команд (они не дефолтные?)
+			pars_not_def_command(&command_cur, term, ret); // обработка не дефолтных команд
+		else									// Они не дефолтные! И есть в папке /bin. Или это не команды.
+			pars_def_command(&command_cur, term);
+		while (command_cur[j] != NULL)
+		{
+			free(command_cur[j]);
+			j++;
+		}
+		free(command_cur);
 		i++;
 	}
-	free(command);
+}
+
+void init_term_fd(t_terminal *term) //инициализация потоков
+{
+	term->fd.in = STDIN;
+	term->fd.out = STDOUT;
+	term->fd.error = STDERROR;
 }
 
 void teminal(t_terminal *term) //чтение строк терминала
 {
+	init_term_fd(term); //переинициализация потоков
 	term->line = readline("minishell$ ");
 	if (term->line == NULL || !ft_strncmp(term->line, "exit", 4)) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
 		ft_exit(term);
@@ -390,6 +494,7 @@ void teminal(t_terminal *term) //чтение строк терминала
 		}
 		command(term); //функция обработки команд
 	}
+	//exit(0);
 }
 
 void init_env(t_list_env **env, char **envp)
@@ -420,19 +525,24 @@ void init_env(t_list_env **env, char **envp)
 	}
 }
 
+void init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
+{
+	init_env(&term->env, envp);
+	(void)argc;
+	(void)argv;
+	term->fd_history = -1;
+	term->line = NULL;
+	term->history_cmd = NULL;
+	read_file_history(term);
+}
+
 int main(int argc, char **argv, char **envp)
 {
 	t_terminal term;
 
-	init_env(&term.env, envp);
-	(void)argc;
-	(void)argv;
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGINT, ft_print_n);
-	term.fd_history = -1;
-	term.line = NULL;
-	term.history_cmd = NULL;
-	read_file_history(&term);
+	init_t_teminal(&term, argc, argv, envp);
 	if (term.fd_history != -1)
 		close(term.fd_history);
 	term.fd_history = -1;
@@ -441,7 +551,121 @@ int main(int argc, char **argv, char **envp)
 	close(term.fd_history);
 	return (0);
 }
-// ВСЕ КОМАНДЫ РАБОТАЮТ. НАДО ТЕСТИРОВАТЬ РАЗНЫЕ КЕЙСЫ. ДОБАВИТЬ ОБРАБОТКУ ВСЯКИХ СИМВОЛОВ ЗАДАЧА №1
-// ЕСТЬ ЕБУЧИЙ ЛИК, КОТОРЫЙ Я НЕ МОГУ ПОФИКСТИЬ !!!!!!!!!!!!!!!!!!!!!!!!!!!
-// НЕ РАБОТАЕТ ПЕРЕНАПРПВЛЕНИЕ ВВОДА И ВЫВОДА	ЗАДАЧА №2
-// НЕ РАБОТАЮТ ПАЙПЫ							ЗАДАЧА №3
+
+//-----------ЗАДАЧИ-----------
+//	Добавить поддержку переменных среды для команд.
+//	Проверить разные последовательности символов. Экранирование, кавычки(двойные, одинарные), и другие.
+//	Реализовать перенаправелние вывода. Перенаправление стандартных потков терминала(возможно не надо).
+/*{ https://www.opennet.ru/docs/RUS/bash_scripting_guide/c11620.html
+	COMMAND_OUTPUT >
+		# Перенаправление stdout (вывода) в файл.
+		# Если файл отсутствовал, то он создется, иначе -- перезаписывается.
+	: > filename
+		# Операция > усекает файл "filename" до нулевой длины.
+		# Если до выполнения операции файла не существовало,
+		# то создается новый файл с нулевой длиной (тот же эффект дает команда 'touch').
+		# Символ : выступает здесь в роли местозаполнителя, не выводя ничего.
+
+	> filename
+		# Операция > усекает файл "filename" до нулевой длины.
+		# Если до выполнения операции файла не существовало,
+		# то создается новый файл с нулевой длиной (тот же эффект дает команда 'touch').
+		# (тот же результат, что и выше -- ": >", но этот вариант неработоспособен
+		# в некоторых командных оболочках.)
+
+	COMMAND_OUTPUT >>
+		# Перенаправление stdout (вывода) в файл.
+		# Создает новый файл, если он отсутствовал, иначе -- дописывает в конец файла.
+		# Однострочные команды перенаправления
+		# (затрагивают только ту строку, в которой они встречаются):
+		# --------------------------------------------------------------------
+
+	1>filename
+		# Перенаправление вывода (stdout) в файл "filename".
+	1>>filename
+		# Перенаправление вывода (stdout) в файл "filename", файл открывается в режиме добавления.
+	2>filename
+		# Перенаправление stderr в файл "filename".
+	2>>filename
+		# Перенаправление stderr в файл "filename", файл открывается в режиме добавления.
+	&>filename
+		# Перенаправление stdout и stderr в файл "filename".
+
+		#==============================================================================
+		# Перенаправление stdout, только для одной строки.
+		LOGFILE=script.log
+
+		echo "Эта строка будет записана в файл \"$LOGFILE\"." 1>$LOGFILE
+		echo "Эта строка будет добавлена в конец файла \"$LOGFILE\"." 1>>$LOGFILE
+		echo "Эта строка тоже будет добавлена в конец файла \"$LOGFILE\"." 1>>$LOGFILE
+		echo "Эта строка будет выведена на экран и не попадет в файл \"$LOGFILE\"."
+		# После каждой строки, сделанное перенаправление автоматически "сбрасывается".
+
+
+
+		# Перенаправление stderr, только для одной строки.
+		ERRORFILE=script.errors
+
+		bad_command1 2>$ERRORFILE		#  Сообщение об ошибке запишется в $ERRORFILE.
+		bad_command2 2>>$ERRORFILE		#  Сообщение об ошибке добавится в конец $ERRORFILE.
+		bad_command3					#  Сообщение об ошибке будет выведено на stderr,
+										#+ и не попадет в $ERRORFILE.
+		# После каждой строки, сделанное перенаправление также автоматически "сбрасывается".
+		#==============================================================================
+
+
+	2>&1
+		# Перенаправляется stderr на stdout.
+		# Сообщения об ошибках передаются туда же, куда и стандартный вывод.
+
+	i>&j
+		# Перенаправляется файл с дескриптором i в j.
+		# Вывод в файл с дескриптором i передается в файл с дескриптором j.
+
+	>&j
+		# Перенаправляется  файл с дескриптором 1 (stdout) в файл с дескриптором j.
+		# Вывод на stdout передается в файл с дескриптором j.
+
+	0< FILENAME
+	< FILENAME
+		# Ввод из файла.
+		# Парная команде ">", часто встречается в комбинации с ней.
+		# grep search-word <filename
+
+
+	[j]<>filename
+		# Файл "filename" открывается на чтение и запись, и связывается с дескриптором "j".
+		# Если "filename" отсутствует, то он создается.
+		# Если дескриптор "j" не указан, то, по-умолчанию, бередся дескриптор 0, stdin.
+		#
+		# Как одно из применений этого -- запись в конкретную позицию в файле.
+		echo 1234567890 > File		# Записать строку в файл "File".
+		exec 3<> File				# Открыть "File" и связать с дескриптором 3.
+		read -n 4 <&3				# Прочитать 4 символа.
+		echo -n . >&3				# Записать символ точки.
+		exec 3>&-					# Закрыть дескриптор 3.
+		cat File					# ==> 1234.67890
+		# Произвольный доступ, да и только!
+}*/
+
+//	Сделать пайпы.
+//	ЕСТЬ ЕБУЧИЙ ЛИК, КОТОРЫЙ Я НЕ МОГУ ПОФИКСТИЬ !!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//-----------НЕ ЗАБЫТЬ-----------
+//	dup2(fd, 1); перенаправлени стандартного вывода в fd
+
+//-----------ЗАМЕЧЕННЫЕ БАГИ-----------
+// unset не всегда удаляет переменную
+// env с аргументом должен выводить ошибку
+// Бывает, что нет перевода строки терминала при нажати всяких кнопок с ctrl
+// echo g'ls \n ''"'""' pwd'""'' криво работает проверка кавычек
+
+//-----------ТЕСТИРОВАТЬ-----------
+//	export $ABC
+//	env LA=
+//	export $ABC = sad
+//	export
+//	exit rasd
+//	exit s
+//	exitd
+//	a=linuxcareer.com; echo $a linuxcareer.com
