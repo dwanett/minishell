@@ -64,34 +64,6 @@ int check_def_com(char *command, char **path) //Проверка /bin
 	return (1);
 }
 
-int check_symbol_close(char *command, char c, int *ferst_pos, int *last_pos) // проверка количества вхождений символов
-{
-	int i;
-	int count;
-
-	i = 0;
-	*ferst_pos = 0;
-	*last_pos = 0;
-	count = 0;
-	while (command[i] != '\0')
-	{
-		if (command[i] == c && *ferst_pos == 0 && count == 0)
-		{
-			*ferst_pos = i;
-			//if (*ferst_pos == 0)
-			//	*ferst_pos++;
-		}
-		else if (command[i] == c && *last_pos == 0)
-			*last_pos = i;
-		if (command[i] == c)
-			count++;
-		i++;
-	}
-	if ((count % 2 == 0) || (*ferst_pos == 0 && *last_pos == 0))
-		return (count);
-	return (-1);
-}
-
 /*void del_symbol(char **command, char c)
 {
 	char **tmp_split;
@@ -117,40 +89,45 @@ int check_symbol_close(char *command, char c, int *ferst_pos, int *last_pos) // 
 	}
 }*/
 
-int ligic_cavichki(char ***command, int count_one, int count_two) //как сломать мозг(функция для проверки закрытия кавычек)
+int ligic_cavichki(char *command)//Проверка правильности расстановки кавычек
 {
-	int ferst_pos_one;	// первое вхождение '
-	int last_pos_one;	// второе вхождение '
-	int ferst_pos_two;	// первое вхождение "
-	int last_pos_two;	// второе вхождение "
-	int begin;
+	int ferst_pos;
+	int last_pos;
+	char c;
+	int i;
 
-	begin = -1;
-	while (count_one > 2 || count_two > 2) //А теперь повертим строку на хую
+	i = 0;
+	while (command[i] != '\0')
 	{
-		if (count_one != 3)
+		ferst_pos = 0;
+		last_pos = 0;
+		if (command[i] == '\'')
 		{
-			if (begin == -1)
-				begin = 0;
-			if ((last_pos_one < last_pos_two && last_pos_one != 0) || last_pos_two == 0)
-				begin += last_pos_one;
-			else
-				begin += last_pos_two;
+			c = '\'';
+			ferst_pos = i;
 		}
-		count_two = check_symbol_close((*command)[0] + begin + 1, '"', &ferst_pos_two, &last_pos_two);	// закрывается ли "
-		count_one = check_symbol_close((*command)[0] + begin + 1, '\'', &ferst_pos_one, &last_pos_one);	// закрывается ли '
-		if (count_one == -1 && (ferst_pos_one > last_pos_two || count_two == 0))
+		if (command[i] == '"')
+		{
+			c = '"';
+			ferst_pos = i;
+		}
+		if (ferst_pos != 0)
+		{
+			while (command[i] != '\0')
+			{
+				i++;
+				if (command[i] == c)
+				{
+					last_pos = i;
+					break ;
+				}
+			}
+		}
+		if (ferst_pos != 0 && last_pos == 0)
 			return (1);
-		if (count_two == -1 && (ferst_pos_two > last_pos_one || count_one == 0))
-			return (1);
-		if (count_one != 0 && (ferst_pos_one < ferst_pos_two && last_pos_one < last_pos_two && ferst_pos_two < last_pos_one && count_two != -1))
-			return (1);
-		if (count_two != 0 && (ferst_pos_two < ferst_pos_one && last_pos_two < last_pos_one && ferst_pos_one < last_pos_two && count_one != -1))
-			return (1);
-		if (count_one == -1 && count_two == -1)
-			count_two = 4;
+		i++;
 	}
-	return (0); //если эта чертова штука дошла сюда, то строка норм
+	return (0);
 }
 
 int count_symbol_str(char *str, char c)
@@ -181,14 +158,14 @@ int pars_cavichki(char ***command, t_terminal *term)
 
 	i = 0;
 	j = 0;
-	if (ligic_cavichki(command, 3, 3)) // Порно-функция
+	if (ligic_cavichki((*command)[0])) //А ты точно не хуету ввел?
 	{
 		ft_putstr_fd((*command)[0], term->fd.error);
 		ft_putstr_fd(": ", term->fd.error);
 		ft_putstr_fd("error syntax", term->fd.error);
 		ft_putstr_fd("\n", term->fd.error);
 		exit(-1);
-	}			// Если порно-функция не выдала ошибку(а ты фартовый тип), то идем дальше и гуляем по кавычки и копируем ток нужные
+	}
 	count_one = count_symbol_str((*command)[0], '\'');
 	count_two = count_symbol_str((*command)[0], '"');
 	if (count_one % 2 != 0)
@@ -270,7 +247,6 @@ void pars_def_command(char ***command, t_terminal *term) // Обработка �
 		**command = tmp;
 		free(path);
 	}
-	//utils_for_cavichki(command);
 	pid = fork(); // создание потока для выполения команды
 	if (pid == 0)
 		l = execve(*command[0], *command, NULL);
@@ -357,9 +333,10 @@ int ft_size_matrix_and_trim(char **matrix, char *c)
 char *serch_env(char *name, t_terminal *term, int *i)
 {
 	t_list_env *tmp;
-
+	int j;
 
 	tmp = term->env;
+	j = 0;
 	while (tmp != NULL)
 	{
 		*i = ft_strclen(tmp->line, '=');
@@ -369,44 +346,43 @@ char *serch_env(char *name, t_terminal *term, int *i)
 		}
 		tmp = tmp->next;
 	}
-	return (NULL);
+	while (ft_isalpha(name[j]))
+		j++;
+	*i = j;
+	return ("");
 }
 
 
 void pars_env_elem(t_terminal *term, char ***command_cur)
 {
 	int i;
-	int j;
-	int point;
 	char *tmp;
 	char *tmp_2;
+	int open; //открытие '
 	int size_name;
 
-	i = count_symbol_str(*(*command_cur), '$');
-	j = 1;
-	point = -1;
-	while (j <= i)
+	i = 0;
+	open = 0;
+	while ((*(*command_cur))[i] != '\0')
 	{
-		point = ft_strcnlen(*(*command_cur), '$', j);
-		if (ft_isalpha(*(*(*command_cur) + point + 1)))
+		if ((*(*command_cur))[i] == '$' && open == 0 && ft_isalpha((*(*command_cur))[i + 1]))
 		{
-			if (count_symbol_str(*(*command_cur) + point + 1, '\'') == 0
-				|| (!(ft_strclen(*(*command_cur), '\'') < point)
-				&& (ft_strcnlen(*(*command_cur), '\'', 2) > point)))
-			{
-				tmp = ft_strndup(*(*command_cur), point);
-				tmp_2 = *(*command_cur);
-				*(*command_cur) = ft_strjoin(tmp, serch_env(*(*command_cur) + point + 1, term, &size_name));
-				free(tmp);
-				tmp = ft_strdup(tmp_2 + point + 1 + size_name);
-				free(tmp_2);
-				tmp_2 = *(*command_cur);
-				*(*command_cur) = ft_strjoin(tmp_2, tmp);
-				free(tmp);
-				free(tmp_2);
-			}
+			tmp = ft_strndup(*(*command_cur), i);
+			tmp_2 = *(*command_cur);
+			*(*command_cur) = ft_strjoin(tmp, serch_env(*(*command_cur) + i + 1, term, &size_name));
+			free(tmp);
+			tmp = ft_strdup(tmp_2 + i + 1 + size_name);
+			free(tmp_2);
+			tmp_2 = *(*command_cur);
+			*(*command_cur) = ft_strjoin(tmp_2, tmp);
+			free(tmp);
+			free(tmp_2);
 		}
-		j++;
+		if ((*(*command_cur))[i] == '\'' && open == 1)
+			open = 0;
+		else if ((*(*command_cur))[i] == '\'')
+			open = 1;
+		i++;
 	}
 }
 
@@ -419,7 +395,7 @@ void pre_pars(t_terminal *term, char ****command_pipe)
 	i = 0;
 	tmp = ft_split(term->line, '|');
 	size = ft_size_matrix_and_trim(tmp, " ");
-	pars_env_elem(term, &tmp); //ДолларЧееек // Такую шайтан функции продолжаются(такая хуета там написана, что смэрть)
+	pars_env_elem(term, &tmp); //ДолларЧееек
 	pars_cavichki(&tmp, term); // Чавички надо?
 	*command_pipe = (char ***)malloc(sizeof(char**) * (size + 1));
 	while (i != size)
@@ -555,7 +531,7 @@ int main(int argc, char **argv, char **envp)
 //-----------ЗАДАЧИ-----------
 //	Добавить поддержку переменных среды для команд.
 //	Проверить разные последовательности символов. Экранирование, кавычки(двойные, одинарные), и другие.
-//	Реализовать перенаправелние вывода. Перенаправление стандартных потков терминала(возможно не надо).
+//	Реализовать перенаправление вывода. Перенаправление стандартных потоков терминала(возможно не надо).
 /*{ https://www.opennet.ru/docs/RUS/bash_scripting_guide/c11620.html
 	COMMAND_OUTPUT >
 		# Перенаправление stdout (вывода) в файл.
@@ -657,8 +633,7 @@ int main(int argc, char **argv, char **envp)
 //-----------ЗАМЕЧЕННЫЕ БАГИ-----------
 // unset не всегда удаляет переменную
 // env с аргументом должен выводить ошибку
-// Бывает, что нет перевода строки терминала при нажати всяких кнопок с ctrl
-// echo g'ls \n ''"'""' pwd'""'' криво работает проверка кавычек
+// Бывает, что нет перевода строки терминала при нажатии всяких кнопок с ctrl
 
 //-----------ТЕСТИРОВАТЬ-----------
 //	export $ABC
