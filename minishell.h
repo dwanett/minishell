@@ -60,6 +60,7 @@ typedef struct s_terminal
 	t_list_histoy	*history_cmd;
 	t_fd			fd;
 	char			*not_def_command[4];
+	int				flag_export;
 }			t_terminal;
 
 void		free_history(t_terminal *term);								//terminal_utils.c
@@ -72,5 +73,5 @@ void		ft_export(char ***command, t_terminal *term, int size_arg);	//env.c
 void		ft_unset(char ***command, t_terminal *term, int size_arg);	//env.c
 void		ft_env(t_terminal *term, int flag);							//env.c
 int			pre_pars(t_terminal *term, char ****command_pipe);			//pars.c
-int			count_symbol_str(char *str, char c);						//minishell.c
+int			count_symbol_str(const char *str, char c);						//minishell.c
 #endif

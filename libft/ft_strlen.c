@@ -30,12 +30,10 @@ int	ft_strclen(const char *str, char c)
 	while (str[i] != '\0')
 	{
 		if (str[i] == c)
-		{
-			ret = i;
 			break ;
-		}
 		i++;
 	}
+	ret = i;
 	return (ret);
 }
 

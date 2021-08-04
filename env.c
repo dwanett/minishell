@@ -47,7 +47,7 @@ void del_element_env(char *elem, t_terminal *term) //Удаление перем
 	prev = tmp;
 	while (tmp != NULL)
 	{
-		if (!ft_strcmp(tmp->name, elem))
+		if (!ft_strncmp(tmp->name, elem, ft_strclen(elem, '=')))
 		{
 			if (prev == term->env)
 				term->env = term->env->next;
@@ -73,7 +73,7 @@ int is_name(char *elem, int flag)
 	i = 0;
 	while (elem[i] != '\0')
 	{
-		if (flag == 1 && elem[i] == '=')
+		if (flag == 1 && elem[i] == '=' && i != 0)
 			break;
 		if (!ft_isalpha(elem[i]) && elem[i] != '_')
 			return (1);
@@ -110,7 +110,7 @@ int is_new_perem_export(char *peremen, t_list_env *env) //Проверка на 
 	tmp = env;
 	while (tmp != NULL)
 	{
-		if (ft_strncmp(tmp->line, peremen, ft_strclen(peremen, '=')))
+		if (!ft_strncmp(tmp->name, peremen, ft_strclen(peremen, '=')))
 			return (1);
 		tmp = tmp->next;
 	}
@@ -127,12 +127,10 @@ int is_ravenstvo(char *peremen) //проверка на символ =
 	while (peremen[i] != '\0')
 	{
 		if (peremen[i] == '=')
-			j = i;
+			j = 1;
 		i++;
 	}
-	if (j != 0)
-		return (1);
-	return (0);
+	return (j);
 }
 
 void ft_export(char ***command, t_terminal *term, int size_arg)
@@ -153,7 +151,7 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 		term->env = tmp;
 		if (is_ravenstvo(*(*command + i))) //есть ли равно?
 		{
-			if (!is_name(*(*command + i), 1)) //имя состоит из букв?
+			if (!is_name(*(*command + i), 1) && term->flag_export != 1) //имя состоит из букв?
 			{
 				if (is_new_perem_export(*(*command + i),
 										tmp))				//если такая переменная уже есть, то удалить ее

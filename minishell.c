@@ -65,7 +65,7 @@ int check_def_com(char *command, char **path) //Проверка /bin
 	return (1);
 }
 
-int count_symbol_str(char *str, char c)
+int count_symbol_str(const char *str, char c)
 {
 	int i;
 	int count;
@@ -304,6 +304,7 @@ void init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 	(void)argc;
 	(void)argv;
 	term->fd_history = -1;
+	term->flag_export = 0;
 	term->line = NULL;
 	term->history_cmd = NULL;
 	term->not_def_command[0] = "cd";

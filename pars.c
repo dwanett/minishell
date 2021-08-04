@@ -206,6 +206,9 @@ int pre_pars(t_terminal *term, char ****command_pipe)
 	*command_pipe = (char ***)malloc(sizeof(char **) * (size + 1));
 	while (i != size)
 	{
+		//par_std_out(); //определение потока вывода
+		if (!ft_strncmp(tmp[i], "export", 6) && count_symbol_str(tmp[i], '$') != 0)
+			term->flag_export = 1;
 		pars_env_elem(term, &tmp[i]);			//ДолларЧееек
 		if (pars_cavichki(&tmp[i], term))		// Чавички надо?
 			ret = 0;
