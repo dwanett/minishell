@@ -22,8 +22,17 @@ void ft_env(t_terminal *term, int flag)
 		if (flag == 1)
 		{
 			ft_putstr_fd("declare -x ", term->fd.out); //есть еще кавычки //тестируй без аргументов команду export
+			ft_putstr_fd(tmp->name, term->fd.out);
+			ft_putstr_fd("=\"", term->fd.out);
+			ft_putstr_fd(tmp->line, term->fd.out);
+			ft_putstr_fd("\"", term->fd.out);
 		}
-		ft_putstr_fd(tmp->line, term->fd.out);
+		else
+		{
+			ft_putstr_fd(tmp->name, term->fd.out);
+			ft_putstr_fd("=", term->fd.out);
+			ft_putstr_fd(tmp->line, term->fd.out);
+		}
 		ft_putstr_fd("\n", term->fd.out);
 		tmp = tmp->next;
 	}
@@ -38,13 +47,14 @@ void del_element_env(char *elem, t_terminal *term) //Удаление перем
 	prev = tmp;
 	while (tmp != NULL)
 	{
-		if (!ft_strncmp(tmp->line, elem, ft_strclen(elem, '=')))
+		if (!ft_strcmp(tmp->name, elem))
 		{
 			if (prev == term->env)
 				term->env = term->env->next;
 			else
 			{
 				prev->next = tmp->next;
+				free(tmp->name);
 				free(tmp->line);
 				free(tmp);
 				tmp = prev;
@@ -151,7 +161,8 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 				while (term->env && term->env->next != NULL)
 					term->env = term->env->next;
 				new_env = (t_list_env *)malloc(sizeof(t_list_env));
-				new_env->line = ft_strdup(*(*command + i));
+				new_env->name = ft_strndup(*(*command + i), ft_strclen(*(*command + i), '='));
+				new_env->line = ft_strdup(*(*command + i) + ft_strclen(*(*command + i), '=') + 1);
 				new_env->next = NULL;
 				if (term->env)
 					term->env->next = new_env;

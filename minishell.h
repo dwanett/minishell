@@ -40,6 +40,7 @@ typedef struct s_list_histoy
 
 typedef struct s_list_env
 {
+	char		*name;
 	char		*line;
 	struct s_list_env *next;
 }			t_list_env;
@@ -58,6 +59,7 @@ typedef struct s_terminal
 	int				fd_history;
 	t_list_histoy	*history_cmd;
 	t_fd			fd;
+	char			*not_def_command[4];
 }			t_terminal;
 
 void		free_history(t_terminal *term);								//terminal_utils.c
@@ -69,4 +71,6 @@ void		save_history(t_terminal *term);								//terminal_history.c
 void		ft_export(char ***command, t_terminal *term, int size_arg);	//env.c
 void		ft_unset(char ***command, t_terminal *term, int size_arg);	//env.c
 void		ft_env(t_terminal *term, int flag);							//env.c
+int			pre_pars(t_terminal *term, char ****command_pipe);			//pars.c
+int			count_symbol_str(char *str, char c);						//minishell.c
 #endif

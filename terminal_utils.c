@@ -34,6 +34,7 @@ void free_env(t_list_env *env)
 	{
 		tmp = env;
 		env = env->next;
+		free(tmp->name);
 		free(tmp->line);
 		free(tmp);
 	}
