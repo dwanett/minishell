@@ -42,6 +42,7 @@ typedef struct s_list_env
 {
 	char		*name;
 	char		*line;
+	char		*update_variable;
 	struct s_list_env *next;
 }			t_list_env;
 
@@ -61,17 +62,20 @@ typedef struct s_terminal
 	t_fd			fd;
 	char			*not_def_command[4];
 	int				flag_export;
+	int				flag_def_com;
+	t_list_env		*update;
 }			t_terminal;
 
-void		free_history(t_terminal *term);								//terminal_utils.c
-void		ft_exit(t_terminal *term);									//terminal_utils.c
-void		ft_print_n();												//terminal_utils.c
-void		ft_add_history(t_terminal *term);							//terminal_history.c
-void		read_file_history(t_terminal *term);						//terminal_history.c
-void		save_history(t_terminal *term);								//terminal_history.c
-void		ft_export(char ***command, t_terminal *term, int size_arg);	//env.c
-void		ft_unset(char ***command, t_terminal *term, int size_arg);	//env.c
-void		ft_env(t_terminal *term, int flag);							//env.c
-int			pre_pars(t_terminal *term, char ****command_pipe);			//pars.c
-int			count_symbol_str(const char *str, char c);						//minishell.c
+void		free_history(t_terminal *term);											//terminal_utils.c
+void		ft_exit(t_terminal *term);												//terminal_utils.c
+void		ft_print_n();															//terminal_utils.c
+void		ft_add_history(t_terminal *term);										//terminal_history.c
+void		read_file_history(t_terminal *term);									//terminal_history.c
+void		save_history(t_terminal *term);											//terminal_history.c
+void		ft_export(char ***command, t_terminal *term, int size_arg);				//env.c
+void		ft_unset(char ***command, t_terminal *term, int size_arg);				//env.c
+void		ft_env(t_terminal *term, int flag);										//env.c
+void		update_variable_env(t_terminal *term, char *path_com, char *last_arg);	//env.c
+int			pre_pars(t_terminal *term, char ****command_pipe);						//pars.c
+int			count_symbol_str(const char *str, char c);								//minishell.c
 #endif

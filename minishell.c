@@ -128,6 +128,8 @@ void pars_def_command(char ***command, t_terminal *term) // Обработка �
 
 	l = 0;
 	pid = fork(); // создание потока для выполения команды
+	update_variable_env(term, *command[0], ft_strrchr(*command[0], '/') + 1);
+	term->flag_def_com = 1;
 	if (pid == 0)
 		l = execve(*command[0], *command, NULL);
 	if (l == -1)
@@ -181,6 +183,7 @@ void pars_not_def_command(char ***command, t_terminal *term, int i) // Обра�
 		tmp++;
 		j++;
 	}
+	update_variable_env(term, NULL, *command[0]);
 	if (i == 0)
 		ft_cd(command, j, term);
 	else if (i == 1)
@@ -228,6 +231,10 @@ void command(t_terminal *term)
 		}
 		while (command_cur[j] != NULL)
 		{
+			if (command_cur[j + 1] == NULL && term->flag_export != 2 && term->flag_def_com == 0)
+				update_variable_env(term, NULL, command_cur[j]);
+			if (j == 0)
+				term->flag_def_com = 0;
 			free(command_cur[j]);
 			j++;
 		}
@@ -269,7 +276,7 @@ void teminal(t_terminal *term) //чтение строк терминала
 	}
 }
 
-void init_env(t_list_env **env, char **envp)
+void init_env(t_list_env **env, char **envp, t_terminal *term)
 {
 	t_list_env *tmp;
 	int i;
@@ -289,6 +296,12 @@ void init_env(t_list_env **env, char **envp)
 		}
 		tmp->name = ft_strndup(envp[i], ft_strclen(envp[i], '='));
 		tmp->line = ft_strdup(envp[i] + ft_strclen(envp[i], '=') + 1);
+		tmp->update_variable = NULL;
+		if (!ft_strcmp(tmp->name, "_"))
+		{
+			tmp->update_variable = ft_strdup(ft_strrchr(envp[i], '/') - 1);
+			term->update = tmp;
+		}
 		if (*env == NULL)
 			tmp->next = NULL;
 		else
@@ -300,11 +313,12 @@ void init_env(t_list_env **env, char **envp)
 
 void init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 {
-	init_env(&term->env, envp);
+	init_env(&term->env, envp, term);
 	(void)argc;
 	(void)argv;
 	term->fd_history = -1;
 	term->flag_export = 0;
+	term->flag_def_com = 0;
 	term->line = NULL;
 	term->history_cmd = NULL;
 	term->not_def_command[0] = "cd";
@@ -429,17 +443,18 @@ int main(int argc, char **argv, char **envp)
 
 //-----------НЕ ЗАБЫТЬ-----------
 //	dup2(fd, 1); перенаправлени стандартного вывода в fd
+// не дефолтные команды не принимают через пайп
 
 //-----------ЗАМЕЧЕННЫЕ БАГИ-----------
 // unset не всегда удаляет переменную
 // env с аргументом должен выводить ошибку
 // Бывает, что нет перевода строки терминала при нажатии всяких кнопок с ctrl
+// Переменная $_ должна обновляться
 
 //-----------ТЕСТИРОВАТЬ-----------
 //	Тестировать кавычки и переменные среды
 //	env LA=
-//	export $ABC = sad
+//	a=linuxcareer.com; echo $a linuxcareer.com
 //	exit rasd
 //	exit s
 //	exitd
-//	a=linuxcareer.com; echo $a linuxcareer.com

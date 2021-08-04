@@ -144,6 +144,12 @@ char *serch_env(char *name, t_terminal *term, int *i)
 		*i = ft_strlen(tmp->name);
 		if (!ft_strncmp(name, tmp->name, *i))
 		{
+			if (!ft_strcmp(tmp->name, "_"))
+			{
+				if (term->update == NULL)
+					update_variable_env(term, NULL, "_");
+				return (term->update->update_variable);
+			}
 			return (tmp->line);
 		}
 		tmp = tmp->next;
@@ -166,7 +172,7 @@ void pars_env_elem(t_terminal *term, char **command_cur)
 	open = 0;
 	while (((*command_cur))[i] != '\0')
 	{
-		if (((*command_cur))[i] == '$' && open == 0 && ft_isalpha(((*command_cur))[i + 1]))
+		if (((*command_cur))[i] == '$' && open == 0 && (ft_isalpha(((*command_cur))[i + 1]) || ((*command_cur))[i + 1] == '_'))
 		{
 			tmp = ft_strndup(*command_cur, i);
 			tmp_2 = *command_cur;
@@ -206,9 +212,13 @@ int pre_pars(t_terminal *term, char ****command_pipe)
 	*command_pipe = (char ***)malloc(sizeof(char **) * (size + 1));
 	while (i != size)
 	{
-		//par_std_out(); //определение потока вывода
-		if (!ft_strncmp(tmp[i], "export", 6) && count_symbol_str(tmp[i], '$') != 0)
-			term->flag_export = 1;
+		//par_std_out(); //определение потока вывода если он первый
+		if (!ft_strncmp(tmp[i], "export", 6))
+		{
+			term->flag_export = 2;
+			if (count_symbol_str(tmp[i], '$') != 0)
+				term->flag_export = 1;
+		}
 		pars_env_elem(term, &tmp[i]);			//ДолларЧееек
 		if (pars_cavichki(&tmp[i], term))		// Чавички надо?
 			ret = 0;

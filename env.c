@@ -12,28 +12,63 @@
 
 #include "minishell.h"
 
+void update_variable_env(t_terminal *term, char *path_com, char *last_arg)
+{
+	t_list_env *tmp;
+
+	if (term->update == NULL)
+	{
+		tmp = (t_list_env *)malloc(sizeof(t_list_env));
+		if (path_com != NULL)
+			tmp->line = ft_strdup(path_com);
+		else
+			tmp->line = ft_strdup("/usr/bin/env");
+		tmp->update_variable = ft_strdup(last_arg);
+		tmp->name = ft_strdup("_");
+		tmp->next = term->env;
+		term->env = tmp;
+		term->update = tmp;
+	}
+	else
+	{
+		if (path_com != NULL)
+		{
+			free(term->update->line);
+			term->update->line = ft_strdup(path_com);
+		}
+		free(term->update->update_variable);
+		term->update->update_variable = ft_strdup(last_arg);
+	}
+}
+
 void ft_env(t_terminal *term, int flag)
 {
 	t_list_env *tmp;
 
 	tmp = term->env;
+	update_variable_env(term, "/usr/bin/env", "env");
 	while (tmp != NULL)
 	{
 		if (flag == 1)
 		{
-			ft_putstr_fd("declare -x ", term->fd.out); //есть еще кавычки //тестируй без аргументов команду export
-			ft_putstr_fd(tmp->name, term->fd.out);
-			ft_putstr_fd("=\"", term->fd.out);
-			ft_putstr_fd(tmp->line, term->fd.out);
-			ft_putstr_fd("\"", term->fd.out);
+			update_variable_env(term, "/usr/bin/export", "export");
+			if (ft_strcmp(tmp->name, "_"))
+			{
+				ft_putstr_fd("declare -x ", term->fd.out); //есть еще кавычки //тестируй без аргументов команду export
+				ft_putstr_fd(tmp->name, term->fd.out);
+				ft_putstr_fd("=\"", term->fd.out);
+				ft_putstr_fd(tmp->line, term->fd.out);
+				ft_putstr_fd("\"", term->fd.out);
+				ft_putstr_fd("\n", term->fd.out);
+			}
 		}
 		else
 		{
 			ft_putstr_fd(tmp->name, term->fd.out);
 			ft_putstr_fd("=", term->fd.out);
 			ft_putstr_fd(tmp->line, term->fd.out);
+			ft_putstr_fd("\n", term->fd.out);
 		}
-		ft_putstr_fd("\n", term->fd.out);
 		tmp = tmp->next;
 	}
 }
@@ -56,7 +91,14 @@ void del_element_env(char *elem, t_terminal *term) //Удаление перем
 				prev->next = tmp->next;
 				free(tmp->name);
 				free(tmp->line);
-				free(tmp);
+				if (tmp->update_variable != NULL)
+				{
+					free(tmp->update_variable);
+					free(term->update);
+					term->update = NULL;
+				}
+				else
+					free(tmp);
 				tmp = prev;
 			}
 			break;
@@ -161,6 +203,7 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 				new_env = (t_list_env *)malloc(sizeof(t_list_env));
 				new_env->name = ft_strndup(*(*command + i), ft_strclen(*(*command + i), '='));
 				new_env->line = ft_strdup(*(*command + i) + ft_strclen(*(*command + i), '=') + 1);
+				update_variable_env(term, NULL, new_env->name);
 				new_env->next = NULL;
 				if (term->env)
 					term->env->next = new_env;
@@ -180,3 +223,4 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 	}
 	term->env = tmp;
 }
+

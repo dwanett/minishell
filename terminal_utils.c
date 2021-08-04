@@ -36,6 +36,8 @@ void free_env(t_list_env *env)
 		env = env->next;
 		free(tmp->name);
 		free(tmp->line);
+		if (tmp->update_variable != NULL)
+			free(tmp->update_variable);
 		free(tmp);
 	}
 }
@@ -46,6 +48,8 @@ void ft_exit(t_terminal *term) // выход из терминала и сохр
 		ft_add_history(term);
 	save_history(term);
 	free_env(term->env);
+	if (term->line != NULL)
+		free(term->line);
 	//free_history(term);
 	ft_putstr_fd("exit\n", 1);
 	exit(0);
