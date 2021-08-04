@@ -61,6 +61,7 @@ int check_def_com(char *command, char **path) //Проверка /bin
 		closedir(dir);
 		i++;
 	}
+	free(patch_env);
 	return (1);
 }
 
@@ -99,8 +100,8 @@ int ligic_cavichki(char *command)//Проверка правильности р�
 	i = 0;
 	while (command[i] != '\0')
 	{
-		ferst_pos = 0;
-		last_pos = 0;
+		ferst_pos = -1;
+		last_pos = -1;
 		if (command[i] == '\'')
 		{
 			c = '\'';
@@ -111,7 +112,7 @@ int ligic_cavichki(char *command)//Проверка правильности р�
 			c = '"';
 			ferst_pos = i;
 		}
-		if (ferst_pos != 0)
+		if (ferst_pos != -1)
 		{
 			while (command[i] != '\0')
 			{
@@ -123,7 +124,7 @@ int ligic_cavichki(char *command)//Проверка правильности р�
 				}
 			}
 		}
-		if (ferst_pos != 0 && last_pos == 0)
+		if (ferst_pos != -1 && last_pos == -1)
 			return (1);
 		i++;
 	}
@@ -164,7 +165,7 @@ int pars_cavichki(char ***command, t_terminal *term)
 		ft_putstr_fd(": ", term->fd.error);
 		ft_putstr_fd("error syntax", term->fd.error);
 		ft_putstr_fd("\n", term->fd.error);
-		exit(-1);
+		return (1);
 	}
 	count_one = count_symbol_str((*command)[0], '\'');
 	count_two = count_symbol_str((*command)[0], '"');
@@ -230,6 +231,7 @@ void pars_def_command(char ***command, t_terminal *term) // Обработка �
 	int status;
 	char *path;
 
+	l = 0;
 	if (!is_path(**command)) // Если это не путь то
 	{
 		if (check_def_com(**command, &path)) //это команда? (если есть файл в /bin - это команда)
@@ -386,24 +388,30 @@ void pars_env_elem(t_terminal *term, char ***command_cur)
 	}
 }
 
-void pre_pars(t_terminal *term, char ****command_pipe)
+int pre_pars(t_terminal *term, char ****command_pipe)
 {
 	int size;
 	int i;
 	char **tmp;
+	int ret;
 
 	i = 0;
+	ret = 1;
 	tmp = ft_split(term->line, '|');
 	size = ft_size_matrix_and_trim(tmp, " ");
 	pars_env_elem(term, &tmp); //ДолларЧееек
-	pars_cavichki(&tmp, term); // Чавички надо?
+	if (pars_cavichki(&tmp, term)) // Чавички надо?
+		ret = 0;
 	*command_pipe = (char ***)malloc(sizeof(char**) * (size + 1));
 	while (i != size)
 	{
 		(*command_pipe)[i] = ft_split(tmp[i], ' ');
+		free(tmp[i]);
 		i++;
 	}
+	free(tmp);
 	(*command_pipe)[i] = NULL;
+	return (ret);
 }
 
 void command(t_terminal *term)
@@ -414,22 +422,26 @@ void command(t_terminal *term)
 	int i;
 	int j;
 	int ret;
+	int number_command;
 
 	i = 0;
 	not_def_com[0] = "cd"; //возможно эти команды надо делать отдельным процессом, но хз
 	not_def_com[1] = "export";
 	not_def_com[2] = "unset";
 	not_def_com[3] = "env";
-	pre_pars(term, &command_pipe);
+	ret = pre_pars(term, &command_pipe);
 	while (command_pipe[i] != NULL)
 	{
 		j = 0;
 		command_cur = command_pipe[i];
-		ret = check_not_def_com(*command_cur, not_def_com);
-		if (ret != -1)									// проверка команд (они не дефолтные?)
-			pars_not_def_command(&command_cur, term, ret); // обработка не дефолтных команд
-		else									// Они не дефолтные! И есть в папке /bin. Или это не команды.
-			pars_def_command(&command_cur, term);
+		if (ret && *command_cur != NULL)
+		{
+			number_command = check_not_def_com(*command_cur, not_def_com);
+			if (number_command != -1)		// проверка команд (они не дефолтные?)
+				pars_not_def_command(&command_cur, term, number_command); 			// обработка не дефолтных команд
+			else									// Они не дефолтные! И есть в папке /bin. Или это не команды.
+				pars_def_command(&command_cur, term);
+		}
 		while (command_cur[j] != NULL)
 		{
 			free(command_cur[j]);
@@ -438,6 +450,7 @@ void command(t_terminal *term)
 		free(command_cur);
 		i++;
 	}
+	free(command_pipe);
 }
 
 void init_term_fd(t_terminal *term) //инициализация потоков
@@ -470,7 +483,6 @@ void teminal(t_terminal *term) //чтение строк терминала
 		}
 		command(term); //функция обработки команд
 	}
-	//exit(0);
 }
 
 void init_env(t_list_env **env, char **envp)
@@ -529,8 +541,6 @@ int main(int argc, char **argv, char **envp)
 }
 
 //-----------ЗАДАЧИ-----------
-//	Добавить поддержку переменных среды для команд.
-//	Проверить разные последовательности символов. Экранирование, кавычки(двойные, одинарные), и другие.
 //	Реализовать перенаправление вывода. Перенаправление стандартных потоков терминала(возможно не надо).
 /*{ https://www.opennet.ru/docs/RUS/bash_scripting_guide/c11620.html
 	COMMAND_OUTPUT >
@@ -636,6 +646,9 @@ int main(int argc, char **argv, char **envp)
 // Бывает, что нет перевода строки терминала при нажатии всяких кнопок с ctrl
 
 //-----------ТЕСТИРОВАТЬ-----------
+//	Тестировать кавычки и переменные среды
+//  unset $USER
+//	export $USER
 //	export $ABC
 //	env LA=
 //	export $ABC = sad
