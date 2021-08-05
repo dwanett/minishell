@@ -41,35 +41,78 @@ void update_variable_env(t_terminal *term, char *path_com, char *last_arg)
 	}
 }
 
-void ft_env(t_terminal *term, int flag)
+char *is_valid_env_arg(char **command)
+{
+	int i;
+
+	i = 1;
+	while (command[i] != NULL)
+	{
+		if (count_symbol_str(command[i], '=') == 0)
+		{
+			open(command[i], O_RDWR);
+			return (command[i]);
+		}
+		i++;
+	}
+	return (NULL);
+}
+
+void ft_env(t_terminal *term, int flag, char ***command)
 {
 	t_list_env *tmp;
+	char *check_error;
+	int i;
 
 	tmp = term->env;
+	i = 1;
 	update_variable_env(term, "/usr/bin/env", "env");
-	while (tmp != NULL)
+	if (command != NULL)
+		check_error = is_valid_env_arg((*command));
+	if(check_error == NULL || flag == 1)
 	{
-		if (flag == 1)
+		while (tmp != NULL)
 		{
-			update_variable_env(term, "/usr/bin/export", "export");
-			if (ft_strcmp(tmp->name, "_"))
+			if (flag == 1)
 			{
-				ft_putstr_fd("declare -x ", term->fd.out); //есть еще кавычки //тестируй без аргументов команду export
+				update_variable_env(term, "/usr/bin/export", "export");
+				if (ft_strcmp(tmp->name, "_"))
+				{
+					ft_putstr_fd("declare -x ",
+							term->fd.out); //есть еще кавычки //тестируй без аргументов команду export
+					ft_putstr_fd(tmp->name, term->fd.out);
+					ft_putstr_fd("=\"", term->fd.out);
+					ft_putstr_fd(tmp->line, term->fd.out);
+					ft_putstr_fd("\"", term->fd.out);
+					ft_putstr_fd("\n", term->fd.out);
+				}
+			}
+			else if (tmp->tmp_variable == 0)
+			{
 				ft_putstr_fd(tmp->name, term->fd.out);
-				ft_putstr_fd("=\"", term->fd.out);
+				ft_putstr_fd("=", term->fd.out);
 				ft_putstr_fd(tmp->line, term->fd.out);
-				ft_putstr_fd("\"", term->fd.out);
 				ft_putstr_fd("\n", term->fd.out);
 			}
+			tmp = tmp->next;
 		}
-		else
+		if (flag == 0)
 		{
-			ft_putstr_fd(tmp->name, term->fd.out);
-			ft_putstr_fd("=", term->fd.out);
-			ft_putstr_fd(tmp->line, term->fd.out);
-			ft_putstr_fd("\n", term->fd.out);
+			while ((*command)[i] != NULL)
+			{
+				ft_putstr_fd((*command)[i], term->fd.out);
+				ft_putstr_fd("\n", term->fd.out);
+				i++;
+			}
 		}
-		tmp = tmp->next;
+	}
+	else if (errno != 0)
+	{
+		ft_putstr_fd("env: ", term->fd.error);
+		ft_putstr_fd(check_error, term->fd.error);
+		ft_putstr_fd(": ", term->fd.error);
+		ft_putstr_fd(strerror(errno), term->fd.error);
+		ft_putstr_fd("\n", term->fd.error);
 	}
 }
 
@@ -89,6 +132,8 @@ void del_element_env(char *elem, t_terminal *term) //Удаление перем
 			else
 			{
 				prev->next = tmp->next;
+				if (!ft_strcmp(tmp->name, "PATH"))
+					term->path = NULL;
 				free(tmp->name);
 				free(tmp->line);
 				if (tmp->update_variable != NULL)
@@ -185,7 +230,7 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 	tmp = term->env;
 	if (!*(*command + 1)) // если нет аргументов
 	{
-		ft_env(term, 1);
+		ft_env(term, 1, NULL);
 		return;
 	}
 	while (i != size_arg)
@@ -193,15 +238,16 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 		term->env = tmp;
 		if (is_ravenstvo(*(*command + i))) //есть ли равно?
 		{
-			if (!is_name(*(*command + i), 1) && term->flag_export != 1) //имя состоит из букв?
+			if (!is_name(*(*command + i), 1) && term->flag.export != 1) //имя состоит из букв?
 			{
-				if (is_new_perem_export(*(*command + i),
-										tmp))				//если такая переменная уже есть, то удалить ее
+				if (is_new_perem_export(*(*command + i), tmp))				//если такая переменная уже есть, то удалить ее
 					del_element_env(*(*command + i), term); //Удаление переменной
 				while (term->env && term->env->next != NULL)
 					term->env = term->env->next;
 				new_env = (t_list_env *)malloc(sizeof(t_list_env));
 				new_env->name = ft_strndup(*(*command + i), ft_strclen(*(*command + i), '='));
+				if (!ft_strcmp(new_env->name, "PATH"))
+					term->path = new_env;
 				new_env->line = ft_strdup(*(*command + i) + ft_strclen(*(*command + i), '=') + 1);
 				update_variable_env(term, NULL, new_env->name);
 				new_env->next = NULL;

@@ -43,27 +43,36 @@ typedef struct s_list_env
 	char		*name;
 	char		*line;
 	char		*update_variable;
+	int			tmp_variable;
 	struct s_list_env *next;
 }			t_list_env;
 
 typedef struct s_fd
 {
+	int	history;
 	int error;
 	int out;
 	int in;
 }				t_fd;
 
+typedef struct s_flags
+{
+	int		export;
+	int		def_com;
+	int		error;
+}				t_flags;
+
 typedef struct s_terminal
 {
 	char			*line;
 	t_list_env 		*env;
-	int				fd_history;
 	t_list_histoy	*history_cmd;
 	t_fd			fd;
 	char			*not_def_command[4];
-	int				flag_export;
-	int				flag_def_com;
 	t_list_env		*update;
+	t_list_env		*path;
+	t_flags			flag;
+	char			**start_env;
 }			t_terminal;
 
 void		free_history(t_terminal *term);											//terminal_utils.c
@@ -74,7 +83,7 @@ void		read_file_history(t_terminal *term);									//terminal_history.c
 void		save_history(t_terminal *term);											//terminal_history.c
 void		ft_export(char ***command, t_terminal *term, int size_arg);				//env.c
 void		ft_unset(char ***command, t_terminal *term, int size_arg);				//env.c
-void		ft_env(t_terminal *term, int flag);										//env.c
+void		ft_env(t_terminal *term, int flag, char ***command);					//env.c
 void		update_variable_env(t_terminal *term, char *path_com, char *last_arg);	//env.c
 int			pre_pars(t_terminal *term, char ****command_pipe);						//pars.c
 int			count_symbol_str(const char *str, char c);								//minishell.c

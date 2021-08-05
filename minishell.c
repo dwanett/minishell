@@ -26,7 +26,7 @@ int	check_not_def_com(char *line, char **not_def_com) //Проверка ком�
 	return (-1);
 }
 
-int check_def_com(char *command, char **path) //Проверка /bin
+int check_def_com(t_terminal *term, char *command, char **path) //Проверка /bin
 {
 	DIR *dir;
 	struct dirent *dp;
@@ -36,8 +36,10 @@ int check_def_com(char *command, char **path) //Проверка /bin
 
 	i = 0;
 	j = 0;
-	patch_env = ft_split(getenv("PATH"), ':'); // получение путей из переменной среды PATH
-	while (patch_env[i] != NULL)
+	patch_env = NULL;
+	if (term->path)
+		patch_env = ft_split(term->path->line, ':'); // получение путей из переменной среды PATH
+	while (patch_env && patch_env[i] != NULL)
 	{
 		dir = opendir(patch_env[i]); // открываем каждую директорию и проверяем наличие команды
 		dp = readdir(dir);
@@ -46,11 +48,10 @@ int check_def_com(char *command, char **path) //Проверка /bin
 			if (!ft_strcmp(command, dp->d_name))
 			{
 				closedir(dir);
-				*path = patch_env[i];
+				*path = ft_strdup(patch_env[i]);
 				while (patch_env[j] != NULL)
 				{
-					if (i != j)
-						free(patch_env[j]);
+					free(patch_env[j]);
 					j++;
 				}
 				free(patch_env);
@@ -61,7 +62,15 @@ int check_def_com(char *command, char **path) //Проверка /bin
 		closedir(dir);
 		i++;
 	}
-	free(patch_env);
+	if (patch_env)
+	{
+		while (patch_env[j] != NULL)
+		{
+			free(patch_env[j]);
+			j++;
+		}
+		free(patch_env);
+	}
 	return (1);
 }
 
@@ -102,7 +111,7 @@ int check_def_command(char ***command, t_terminal *term)
 
 	if (!is_path(**command)) // Если это не путь то
 	{
-		if (check_def_com(**command, &path)) //это команда? (если есть файл в /bin - это команда)
+		if (check_def_com(term, **command, &path)) //это команда? (если есть файл в /bin - это команда)
 		{
 			ft_putstr_fd(*command[0], term->fd.error);
 			ft_putstr_fd(": command not found", term->fd.error);
@@ -129,9 +138,9 @@ void pars_def_command(char ***command, t_terminal *term) // Обработка �
 	l = 0;
 	pid = fork(); // создание потока для выполения команды
 	update_variable_env(term, *command[0], ft_strrchr(*command[0], '/') + 1);
-	term->flag_def_com = 1;
+	term->flag.def_com = 1;
 	if (pid == 0)
-		l = execve(*command[0], *command, NULL);
+		l = execve(*command[0], *command, term->start_env);
 	if (l == -1)
 	{
 		ft_putstr_fd(*command[0], term->fd.error);
@@ -191,7 +200,36 @@ void pars_not_def_command(char ***command, t_terminal *term, int i) // Обра�
 	else if (i == 2)
 		ft_unset(command, term, size_arg);
 	else if (i == 3)
-		ft_env(term, 0);
+		ft_env(term, 0, command);
+}
+
+int tmp_variable(char ***command, t_terminal *term)
+{
+	t_list_env *tmp;
+	int i;
+
+	i = 0;
+	while ((*command)[i] != NULL)
+	{
+		if (count_symbol_str((*command)[i], '=') == 0)
+			return (1);
+		i++;
+	}
+	i = 0;
+	while ((*command)[i] != NULL)
+	{
+		tmp = (t_list_env *)malloc(sizeof(t_list_env));
+		tmp->update_variable = NULL;
+		tmp->name = ft_strndup((*command)[i], ft_strclen((*command)[i], '='));
+		tmp->line = ft_strdup((*command)[i] + ft_strclen((*command)[i], '=') + 1);
+		tmp->tmp_variable = 1;
+		tmp->next = term->env;
+		term->env = tmp;
+		term->flag.export = 2;
+		i++;
+	}
+	update_variable_env(term, NULL, "");
+	return (0);
 }
 
 void command(t_terminal *term)
@@ -212,7 +250,7 @@ void command(t_terminal *term)
 		if (ret && *command_cur != NULL)
 		{
 			number_command = check_not_def_com(*command_cur, term->not_def_command);// возможно эти команды надо делать отдельным процессом, но хз
-			if (number_command == -1)												// проверка команд (они не дефолтные?)
+			if (number_command == -1 && tmp_variable(&command_cur, term))												// проверка команд (они не дефолтные?)
 				is_def_command = check_def_command(&command_cur, term);				// Они не дефолтные! И есть в папке /bin. Или это не команды.
 		}
 		i++;
@@ -231,10 +269,10 @@ void command(t_terminal *term)
 		}
 		while (command_cur[j] != NULL)
 		{
-			if (command_cur[j + 1] == NULL && term->flag_export != 2 && term->flag_def_com == 0)
+			if (command_cur[j + 1] == NULL && term->flag.export != 2 && term->flag.def_com == 0)
 				update_variable_env(term, NULL, command_cur[j]);
 			if (j == 0)
-				term->flag_def_com = 0;
+				term->flag.def_com = 0;
 			free(command_cur[j]);
 			j++;
 		}
@@ -254,6 +292,8 @@ void init_term_fd(t_terminal *term) //инициализация потоков
 void teminal(t_terminal *term) //чтение строк терминала
 {
 	init_term_fd(term); //переинициализация потоков
+	if (term->line != NULL)
+		free(term->line);
 	term->line = readline("minishell$ ");
 	if (term->line == NULL || !ft_strncmp(term->line, "exit", 4)) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
 		ft_exit(term);
@@ -273,6 +313,10 @@ void teminal(t_terminal *term) //чтение строк терминала
 			add_history(term->line);
 		}
 		command(term); //функция обработки команд
+		if (term->flag.error == 1)
+			ft_putstr_fd(";: error syntax\n", term->fd.error);
+		term->flag.error = 0;
+
 	}
 }
 
@@ -297,28 +341,60 @@ void init_env(t_list_env **env, char **envp, t_terminal *term)
 		tmp->name = ft_strndup(envp[i], ft_strclen(envp[i], '='));
 		tmp->line = ft_strdup(envp[i] + ft_strclen(envp[i], '=') + 1);
 		tmp->update_variable = NULL;
+		tmp->tmp_variable = 0;
+		if (!ft_strcmp(tmp->name, "PATH"))
+			term->path = tmp;
 		if (!ft_strcmp(tmp->name, "_"))
 		{
 			tmp->update_variable = ft_strdup(ft_strrchr(envp[i], '/') - 1);
 			term->update = tmp;
 		}
-		if (*env == NULL)
-			tmp->next = NULL;
-		else
-			tmp->next = *env;
+		tmp->next = *env;
 		*env = tmp;
 		i--;
 	}
 }
 
+void init_env_for_next_process(t_terminal *term, char **envp)
+{
+	int size_env;
+	char *tmp;
+	char *itoa;
+	int j;
+
+	size_env = 0;
+	j = 0;
+	while (envp[size_env] != NULL)
+		size_env++;
+	term->start_env = (char **)malloc(sizeof(char*) * size_env);
+	while (j != size_env)
+	{
+		if (ft_strncmp(envp[j], "SHLVL", 5))
+			term->start_env[j] = ft_strdup(envp[j]);
+		else
+		{
+			tmp = ft_strndup(envp[j], ft_strclen(envp[j], '=') + 1);
+			itoa = ft_itoa(ft_atoi(ft_strchr(envp[j], '=') + 1) + 1);
+			term->start_env[j] = ft_strjoin(tmp, itoa);
+			free(tmp);
+			free(itoa);
+		}
+		j++;
+	}
+	term->start_env[j] = NULL;
+}
+
 void init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 {
-	init_env(&term->env, envp, term);
+	term->update = NULL;
+	init_env_for_next_process(term, envp);
+	init_env(&term->env, term->start_env, term);
 	(void)argc;
 	(void)argv;
-	term->fd_history = -1;
-	term->flag_export = 0;
-	term->flag_def_com = 0;
+	term->fd.history = -1;
+	term->flag.export = 0;
+	term->flag.def_com = 0;
+	term->flag.error = 0;
 	term->line = NULL;
 	term->history_cmd = NULL;
 	term->not_def_command[0] = "cd";
@@ -335,12 +411,12 @@ int main(int argc, char **argv, char **envp)
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGINT, ft_print_n);
 	init_t_teminal(&term, argc, argv, envp);
-	if (term.fd_history != -1)
-		close(term.fd_history);
-	term.fd_history = -1;
+	if (term.fd.history != -1)
+		close(term.fd.history);
+	term.fd.history = -1;
 	while (1)
 		teminal(&term);
-	close(term.fd_history);
+	close(term.fd.history);
 	return (0);
 }
 
@@ -449,11 +525,10 @@ int main(int argc, char **argv, char **envp)
 // unset не всегда удаляет переменную
 // env с аргументом должен выводить ошибку
 // Бывает, что нет перевода строки терминала при нажатии всяких кнопок с ctrl
-// Переменная $_ должна обновляться
 
 //-----------ТЕСТИРОВАТЬ-----------
+//	env > lol | grep HOME
 //	Тестировать кавычки и переменные среды
-//	env LA=
 //	a=linuxcareer.com; echo $a linuxcareer.com
 //	exit rasd
 //	exit s

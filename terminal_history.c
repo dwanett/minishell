@@ -17,7 +17,7 @@ void ft_add_history(t_terminal *term) // сохраниение истории �
 	t_list_histoy *tmp;
 
 	tmp = (t_list_histoy *)malloc(sizeof(t_list_histoy));
-	tmp->command = term->line;
+	tmp->command = ft_strdup(term->line);
 	if (term->history_cmd == NULL)
 	{
 		tmp->prev = term->history_cmd;
@@ -39,10 +39,10 @@ void read_file_history(t_terminal *term) //чтение истории пред�
 	char *str;
 
 	l = 1;
-	term->fd_history = open(".history", O_RDWR);
-	if (term->fd_history == -1 && errno == 2)
+	term->fd.history = open(".history", O_RDWR);
+	if (term->fd.history == -1 && errno == 2)
 		return;
-	else if (term->fd_history == -1)
+	else if (term->fd.history == -1)
 	{
 		ft_putstr_fd(strerror(errno), 2);
 		exit(errno);
@@ -52,7 +52,7 @@ void read_file_history(t_terminal *term) //чтение истории пред�
 		str = (char *)malloc(sizeof(char));
 		while (1)
 		{
-			l = read(term->fd_history, buf, 1);
+			l = read(term->fd.history, buf, 1);
 			if (l == 0 || *buf == '\n')
 				break;
 			if (term->line == NULL)
@@ -67,13 +67,12 @@ void read_file_history(t_terminal *term) //чтение истории пред�
 				term->line = str;
 			}
 		}
-		if (l != 0)
+		if (l != 0 && term->line != NULL)
 		{
 			add_history(term->line);
 			ft_add_history(term);
 		}
-		else
-			free(str);
+		free(str);
 		term->line = NULL;
 		str = NULL;
 	}
@@ -86,11 +85,11 @@ void save_history(t_terminal *term) // сохранение истории в ф
 	tmp = term->history_cmd;
 	if (tmp == NULL)
 		return;
-	if (term->fd_history == -1)
-		term->fd_history = open(".history", O_CREAT | O_RDWR, S_IRWXU);
-	if (term->fd_history == -1)
-		term->fd_history = open(".history", O_TRUNC | O_RDWR);
-	if (term->fd_history == -1)
+	if (term->fd.history == -1)
+		term->fd.history = open(".history", O_CREAT | O_RDWR, S_IRWXU);
+	if (term->fd.history == -1)
+		term->fd.history = open(".history", O_TRUNC | O_RDWR);
+	if (term->fd.history == -1)
 	{
 		ft_putstr_fd(strerror(errno), 2);
 		exit(errno);
@@ -101,8 +100,8 @@ void save_history(t_terminal *term) // сохранение истории в ф
 			tmp = tmp->next;
 		while (tmp != NULL)
 		{
-			ft_putstr_fd(tmp->command, term->fd_history);
-			ft_putstr_fd("\n", term->fd_history);
+			ft_putstr_fd(tmp->command, term->fd.history);
+			ft_putstr_fd("\n", term->fd.history);
 			tmp = tmp->prev;
 		}
 	}

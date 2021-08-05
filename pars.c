@@ -51,7 +51,7 @@ int ligic_cavichki(char *command) //Проверка правильности р
 	return (0);
 }
 
-int pars_cavichki(char **command, t_terminal *term)
+int pars_cavichki(char **command, t_terminal *term) // Удаление кавычек из строки
 {
 	int i;
 	int j;
@@ -113,7 +113,7 @@ int pars_cavichki(char **command, t_terminal *term)
 	return (0);
 }
 
-int ft_size_matrix_and_trim(char **matrix, char *c)
+int ft_size_matrix_and_trim(char **matrix, char *c) // Обрезка пробелов в строке и подсчет команд между пайпами
 {
 	int i;
 	char *tmp;
@@ -132,7 +132,7 @@ int ft_size_matrix_and_trim(char **matrix, char *c)
 	return (i);
 }
 
-char *serch_env(char *name, t_terminal *term, int *i)
+char *serch_env(char *name, t_terminal *term, int *i) // Поиск глобальных переменных
 {
 	t_list_env *tmp;
 	int j;
@@ -160,7 +160,7 @@ char *serch_env(char *name, t_terminal *term, int *i)
 	return ("");
 }
 
-void pars_env_elem(t_terminal *term, char **command_cur)
+void pars_env_elem(t_terminal *term, char **command_cur) // Замена глобальных переменных на их значения
 {
 	int i;
 	char *tmp;
@@ -189,16 +189,43 @@ void pars_env_elem(t_terminal *term, char **command_cur)
 			open = 0;
 		else if (((*command_cur))[i] == '\'')
 			open = 1;
+		if (((*command_cur))[i] == '\0')
+			break ;
 		i++;
 	}
 }
 
-void par_std_out()
-{
+//oid par_std_out(t_terminal *term, char *tmp) // Парсинг перенаправления вывода
+//
+//	int i;
 
+//	i = 0;
+//	while (tmp[i] != '\0')
+//	{
+//		if (tmp[i] == '>' || tmp[i] == '<')
+//		{
+//			if (!ft_strncmp(tmp + i, ">>", 2))
+//		}
+//		i++;
+//	}
+//
+
+void par_multi_cammand(t_terminal *term) // Проверка ;
+{
+	int pos;
+	char *tmp;
+
+	if (count_symbol_str(term->line, ';') != 0)
+	{
+		pos = ft_strclen(term->line, ';');
+		tmp = ft_strndup(term->line, pos);
+		free(term->line);
+		term->line = tmp;
+		term->flag.error = 1;
+	}
 }
 
-int pre_pars(t_terminal *term, char ****command_pipe)
+int pre_pars(t_terminal *term, char ****command_pipe) // Главная функция парсера
 {
 	int size;
 	int i;
@@ -207,6 +234,7 @@ int pre_pars(t_terminal *term, char ****command_pipe)
 
 	i = 0;
 	ret = 1;
+	par_multi_cammand(term);
 	tmp = ft_split(term->line, '|');
 	size = ft_size_matrix_and_trim(tmp, " ");
 	*command_pipe = (char ***)malloc(sizeof(char **) * (size + 1));
@@ -215,9 +243,9 @@ int pre_pars(t_terminal *term, char ****command_pipe)
 		//par_std_out(); //определение потока вывода если он первый
 		if (!ft_strncmp(tmp[i], "export", 6))
 		{
-			term->flag_export = 2;
+			term->flag.export = 2;
 			if (count_symbol_str(tmp[i], '$') != 0)
-				term->flag_export = 1;
+				term->flag.export = 1;
 		}
 		pars_env_elem(term, &tmp[i]);			//ДолларЧееек
 		if (pars_cavichki(&tmp[i], term))		// Чавички надо?
