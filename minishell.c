@@ -6,7 +6,7 @@
 /*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/07/30 20:05:21 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/09 18:39:12 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,7 +317,6 @@ void teminal(t_terminal *term) //чтение строк терминала
 		if (term->flag.error == 1)
 			ft_putstr_fd(";: error syntax\n", term->fd.error);
 		term->flag.error = 0;
-
 	}
 }
 
