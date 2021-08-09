@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pars.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/09 19:51:44 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/09 20:30:01 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,63 @@ int ligic_cavichki(char *command) //Проверка правильности р
 	return (0);
 }
 
-int pars_cavichki(char **command, t_terminal *term) // Удаление кавычек из строки
+int	ligic_cavichki_2(char *command)
+{
+	int	size;
+	int	i;
+
+	i = 0;
+	size = 0;
+
+	while (command[i] != '\0')
+	{
+		if (command[i] == ' ')
+		{
+			while (command[i] == ' ')
+				i++;
+			size++;
+		}
+		if (command[i] == '\'')
+		{
+			i++;
+			while (command[i] != '\'')
+			{
+				if (command[i] == '\0')
+					return (-1);
+				i++;
+			}
+		}
+		if (command[i] == '"')
+		{
+			i++;
+			while (command[i] != '"')
+			{
+				if (command[i] == '\0')
+					return (-1);
+				i++;
+			}
+		}
+		i++;
+	}
+	return (size);
+}
+
+int	pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i)
+{
+	int	size;
+
+	if ((size = ligic_cavichki_2(*command)) == -1) //А ты точно не хуету ввел?
+	{
+		ft_putstr_fd(*command, term->fd.error);
+		ft_putstr_fd(": ", term->fd.error);
+		ft_putstr_fd("error syntax", term->fd.error);
+		ft_putstr_fd("\n", term->fd.error);
+		return (1);
+	}
+	return (0);
+}
+
+int		pars_cavichki(char **command, t_terminal *term) // Удаление кавычек из строки
 {
 	int i;
 	int j;
@@ -248,10 +304,12 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 				term->flag.export = 1;
 		}
 		pars_env_elem(term, &tmp[i]);			//ДолларЧееек
-		if (pars_cavichki(&tmp[i], term))		// Чавички надо?
+		//if (pars_cavichki(&tmp[i], term))		// Чавички надо?
+			//ret = 0;
+		if (pars_quotes(&tmp[i], term, command_pipe, i))
 			ret = 0;
 		//par_std_out(); //определение потока вывода
-		(*command_pipe)[i] = ft_split(tmp[i], ' ');
+		//(*command_pipe)[i] = ft_split(tmp[i], ' ');
 		//printf("%s", (*command_pipe)[i]);
 		free(tmp[i]);
 		i++;
