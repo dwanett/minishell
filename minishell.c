@@ -244,6 +244,7 @@ void command(t_terminal *term)
 
 	i = 0;
 	ret = pre_pars(term, &command_pipe);
+	is_def_command = 0;
 	while (command_pipe[i] != NULL)
 	{
 		command_cur = command_pipe[i];
@@ -366,7 +367,7 @@ void init_env_for_next_process(t_terminal *term, char **envp)
 	j = 0;
 	while (envp[size_env] != NULL)
 		size_env++;
-	term->start_env = (char **)malloc(sizeof(char*) * size_env);
+	term->start_env = (char **)malloc(sizeof(char*) * (size_env + 1));
 	while (j != size_env)
 	{
 		if (ft_strncmp(envp[j], "SHLVL", 5))

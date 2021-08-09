@@ -66,6 +66,7 @@ void ft_env(t_terminal *term, int flag, char ***command)
 
 	tmp = term->env;
 	i = 1;
+	check_error = NULL;
 	update_variable_env(term, "/usr/bin/env", "env");
 	if (command != NULL)
 		check_error = is_valid_env_arg((*command));

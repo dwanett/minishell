@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   terminal.c                                         :+:      :+:    :+:   */
+/*   terminal_history.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/31 15:32:17 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/07/31 15:32:17 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/09 17:00:21 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void ft_add_history(t_terminal *term) // сохраниение истории �
 void read_file_history(t_terminal *term) //чтение истории предыдущих сессий
 {
 	int l;
-	char buf[1];
+	char buf[2];
 	char *str;
 
 	l = 1;
@@ -50,9 +50,11 @@ void read_file_history(t_terminal *term) //чтение истории пред�
 	while (l != 0)
 	{
 		str = (char *)malloc(sizeof(char));
+		str[0] = '\0';
 		while (1)
 		{
-			l = read(term->fd.history, buf, 1);
+			l = read(term->fd.history, &buf[0], 1);
+			buf[1] = '\0';
 			if (l == 0 || *buf == '\n')
 				break;
 			if (term->line == NULL)

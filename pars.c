@@ -6,7 +6,7 @@
 /*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/04 15:14:14 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/09 17:31:52 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,6 +252,7 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 			ret = 0;
 		//par_std_out(); //определение потока вывода
 		(*command_pipe)[i] = ft_split(tmp[i], ' ');
+		//printf("%s", (*command_pipe)[i]);
 		free(tmp[i]);
 		i++;
 	}
