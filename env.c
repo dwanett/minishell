@@ -23,7 +23,7 @@ void update_variable_env(t_terminal *term, char *path_com, char *last_arg)
 			tmp->line = ft_strdup(path_com);
 		else
 			tmp->line = ft_strdup("/usr/bin/env");
-		tmp->update_variable = ft_strdup(last_arg);
+		tmp->update_variable = ft_strdup_quotes(last_arg);
 		tmp->name = ft_strdup("_");
 		tmp->next = term->env;
 		term->env = tmp;
@@ -37,7 +37,7 @@ void update_variable_env(t_terminal *term, char *path_com, char *last_arg)
 			term->update->line = ft_strdup(path_com);
 		}
 		free(term->update->update_variable);
-		term->update->update_variable = ft_strdup(last_arg);
+		term->update->update_variable = ft_strdup_quotes(last_arg);
 	}
 }
 

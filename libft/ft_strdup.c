@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strdup.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/20 09:56:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/05/16 16:53:47 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/10 20:17:33 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdio.h>
 
 char	*ft_strdup(const char *src)
 {
@@ -54,4 +55,56 @@ char	*ft_strndup(const char *src, int n)
 		return (buff);
 	}
 	return (NULL);
+}
+
+void	ft_strdub_quotes_help(const char *src, char **buff)
+{
+	int	i;
+	int	j;
+
+	(*buff)[0] = '\'';
+	i = 0;
+	j = 1;
+	while (src[i] != '\0')
+	{
+		if (src[i] == '\'')
+		{
+			(*buff)[j] = '\'';
+			(*buff)[j + 1] = '"';
+			(*buff)[j + 2] = '\'';
+			(*buff)[j + 3] = '"';
+			(*buff)[j + 4] = '\'';
+			j += 4;
+		}
+		else
+			(*buff)[j] = src[i];
+		j++;
+		i++;
+	}
+	(*buff)[j] = '\'';
+	(*buff)[j + 1] = '\0';
+}
+
+char	*ft_strdup_quotes(const char *src)
+{
+	char	*buff;
+	int		i;
+	int		j;
+
+	j = 0;
+	i = 0;
+	while (src[j] != '\0')
+	{
+		if (src[j] =='\'')
+			i += 4;
+		j++;
+	}
+	j = i;
+	i = ft_strlen(src);
+	buff = (char *)malloc(sizeof(char) * (i + 3 + j));
+	if (buff == NULL)
+		return (NULL);
+	else
+		ft_strdub_quotes_help(src, &buff);
+	return (buff);
 }

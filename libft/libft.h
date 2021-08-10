@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/28 13:48:00 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/03 14:36:18 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/10 21:13:17 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ char				*ft_strrchr(const char *s, int c);
 const char			*ft_strnstr(const char *haystack,
 						const char *needle, size_t len);
 int					ft_strncmp(const char *s1, const char *s2, size_t n);
+int					ft_strccmp(const char *s1, const char *s2, char a);
 int					ft_strcmp(const char *s1, const char *s2);
 int					ft_atoi(const char *str);
 int					ft_isalpha(int c);
@@ -50,6 +51,7 @@ int					ft_tolower(int c);
 void				*ft_calloc(size_t nmemb, size_t size);
 char				*ft_strdup(const char *src);
 char				*ft_strndup(const char *src, int n);
+char				*ft_strdup_quotes(const char *src);
 char				*ft_substr(char const *s, unsigned int start, size_t len);
 char				*ft_strjoin(char const *s1, char const *s2);
 char				*ft_strtrim(char const *s1, char const *set);

@@ -6,13 +6,13 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/09 20:30:01 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/10 19:15:29 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int ligic_cavichki(char *command) //Проверка правильности расстановки кавычек
+int	ligic_cavichki(char *command) //Проверка правильности расстановки кавычек
 {
 	int ferst_pos;
 	int last_pos;
@@ -51,51 +51,173 @@ int ligic_cavichki(char *command) //Проверка правильности р
 	return (0);
 }
 
+int	logic_quotes(char *command, int *i, char a, int *size)
+{
+	if (a == ' ')
+	{
+		while (command[*i] == a)
+			(*i)++;
+		(*size)++;
+	}
+	else
+	{
+		(*i)++;
+		while (command[*i] != a)
+		{
+			if (command[*i] == '\0')
+				return (-1);
+			(*i)++;
+		}
+	}
+	return (0);
+}
+
 int	ligic_cavichki_2(char *command)
 {
 	int	size;
 	int	i;
+	int	flag;
 
 	i = 0;
-	size = 0;
-
+	size = 1;
+	flag = 0;
 	while (command[i] != '\0')
 	{
 		if (command[i] == ' ')
-		{
-			while (command[i] == ' ')
-				i++;
-			size++;
-		}
+			flag = logic_quotes(command, &i, ' ', &size);
 		if (command[i] == '\'')
-		{
-			i++;
-			while (command[i] != '\'')
-			{
-				if (command[i] == '\0')
-					return (-1);
-				i++;
-			}
-		}
+			flag = logic_quotes(command, &i, '\'', &size);
 		if (command[i] == '"')
-		{
-			i++;
-			while (command[i] != '"')
-			{
-				if (command[i] == '\0')
-					return (-1);
-				i++;
-			}
-		}
+			flag = logic_quotes(command, &i, '"', &size);
+		if (flag == -1)
+			return (-1);
 		i++;
 	}
 	return (size);
 }
 
-int	pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i)
+void	count_bad(char *command, int *i)
 {
 	int	size;
 
+	size = 0;
+	if (command[*i] == ' ')
+	{
+		while (command[*i] == ' ')
+			*i = *i + 1;
+	}
+	while (command[*i] != '\0' && command[*i] != ' ')
+	{
+		if (command[*i] == '\'')
+			logic_quotes(command, i, '\'', &size);
+		if (command[*i] == '"')
+				logic_quotes(command, i, '"', &size);
+		(*i)++;
+	}
+}
+
+int	count_char(char *command, int count)
+{
+	int	i;
+	int	j;
+	int	quotes;
+	int	g;
+
+	i = 0;
+	g = 0;
+	quotes = 0;
+	j = 0;
+	while (count != 0)
+	{
+		count_bad(command, &i);
+		count--;
+	}
+	while (command[i] == ' ')
+		i++;
+	j = i;
+	count_bad(command, &j);
+	g = i;
+	while (g != j)
+	{
+		if (command[j] == '\'')
+		{
+			g++;
+			while (command[g] != '\'')
+				g++;
+			quotes += 2;
+		}
+		if (command[j] == '"')
+		{
+			g++;
+			while (command[g] != '"')
+				g++;
+			quotes += 2;
+		}
+		g++;
+	}
+	j = j - quotes;
+	return (j - i);
+}
+
+void	char_record(char **a, int count, char *command)
+{
+	int	i;
+	int	j;
+	int	g;
+
+	i = 0;
+	j = 0;
+	g = 0;
+	while (count != 0)
+	{
+		count_bad(command, &i);
+		count--;
+	}
+	while (command[i] == ' ')
+		i++;
+	j = i;
+	count_bad(command, &j);
+	while (i != j)
+	{
+		if (command[i] == '\'')
+		{
+			i++;
+			while (command[i] != '\'')
+			{
+				(*a)[g] = command[i];
+				i++;
+				g++;
+			}
+			i++;
+		}
+		else if (command[i] == '"')
+		{
+			i++;
+			while (command[i] != '"')
+			{
+				(*a)[g] = command[i];
+				i++;
+				g++;
+			}
+			i++;
+		}
+		else
+		{
+			(*a)[g] = command[i];
+			i++;
+			g++;
+		}
+	}
+	(*a)[g] = '\0';
+}
+
+int	pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i)
+{
+	int	size;
+	int	count;
+
+	size = 0;
+	count = 0;
 	if ((size = ligic_cavichki_2(*command)) == -1) //А ты точно не хуету ввел?
 	{
 		ft_putstr_fd(*command, term->fd.error);
@@ -103,6 +225,15 @@ int	pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i)
 		ft_putstr_fd("error syntax", term->fd.error);
 		ft_putstr_fd("\n", term->fd.error);
 		return (1);
+	}
+	(*command_pipe)[i] = (char **)malloc(sizeof(char **) * (size + 1));
+	(*command_pipe)[i][size] = NULL;
+	while (size != 0)
+	{
+		(*command_pipe)[i][count] = (char *)malloc(count_char(*command, count) + 1);
+		char_record(&((*command_pipe)[i][count]), count, *command);
+		size--;
+		count++;
 	}
 	return (0);
 }
@@ -221,14 +352,15 @@ void pars_env_elem(t_terminal *term, char **command_cur) // Замена гло�
 	int i;
 	char *tmp;
 	char *tmp_2;
-	int open; //открытие '
+	int open_one;//открытие '
+	int open_two;//открытие "
 	int size_name;
 
 	i = 0;
-	open = 0;
+	open_one = 0;
 	while (((*command_cur))[i] != '\0')
 	{
-		if (((*command_cur))[i] == '$' && open == 0 && (ft_isalpha(((*command_cur))[i + 1]) || ((*command_cur))[i + 1] == '_'))
+	    if (((*command_cur))[i] == '$' && open_one == 0 && (ft_isalpha(((*command_cur))[i + 1]) || ((*command_cur))[i + 1] == '_'))
 		{
 			tmp = ft_strndup(*command_cur, i);
 			tmp_2 = *command_cur;
@@ -241,10 +373,14 @@ void pars_env_elem(t_terminal *term, char **command_cur) // Замена гло�
 			free(tmp);
 			free(tmp_2);
 		}
-		if (((*command_cur))[i] == '\'' && open == 1)
-			open = 0;
-		else if (((*command_cur))[i] == '\'')
-			open = 1;
+		if (((*command_cur))[i] == '\'' && open_one == 1)
+		    open_one = 0;
+		else if (((*command_cur))[i] == '\'' && open_two == 0)
+		    open_one = 1;
+		if (((*command_cur))[i] == '"' && open_two == 1)
+		    open_two = 0;
+		else if (((*command_cur))[i] == '"')
+		    open_two = 1;
 		if (((*command_cur))[i] == '\0')
 			break ;
 		i++;
@@ -307,7 +443,10 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 		//if (pars_cavichki(&tmp[i], term))		// Чавички надо?
 			//ret = 0;
 		if (pars_quotes(&tmp[i], term, command_pipe, i))
+		{
+		    (*command_pipe)[i] = NULL;
 			ret = 0;
+		}								//он дальше не очень использовался и возникала сега
 		//par_std_out(); //определение потока вывода
 		//(*command_pipe)[i] = ft_split(tmp[i], ' ');
 		//printf("%s", (*command_pipe)[i]);

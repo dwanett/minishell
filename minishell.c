@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/09 18:39:12 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/10 21:13:37 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,12 +235,12 @@ int tmp_variable(char ***command, t_terminal *term)
 void command(t_terminal *term)
 {
 	char ***command_pipe;
-	char **command_cur;
+	char **command_cur; // в список
 	int i;
 	int j;
 	int ret;
-	int is_def_command;
-	int number_command;
+	int is_def_command; // в список
+	int number_command; // в список
 
 	i = 0;
 	ret = pre_pars(term, &command_pipe);
@@ -250,7 +250,7 @@ void command(t_terminal *term)
 		command_cur = command_pipe[i];
 		if (ret && *command_cur != NULL)
 		{
-			number_command = check_not_def_com(*command_cur, term->not_def_command);// возможно эти команды надо делать отдельным процессом, но хз
+			number_command = check_not_def_com(*command_cur, term->not_def_command); // возможно эти команды надо делать отдельным процессом, но хз
 			if (number_command == -1 && tmp_variable(&command_cur, term))												// проверка команд (они не дефолтные?)
 				is_def_command = check_def_command(&command_cur, term);				// Они не дефолтные! И есть в папке /bin. Или это не команды.
 		}
@@ -296,7 +296,7 @@ void teminal(t_terminal *term) //чтение строк терминала
 	if (term->line != NULL)
 		free(term->line);
 	term->line = readline("minishell$ ");
-	if (term->line == NULL || !ft_strncmp(term->line, "exit", 4)) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
+	if (term->line == NULL || !ft_strccmp(term->line, "exit", ' ')) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
 		ft_exit(term);
 	else if (ft_strcmp(term->line, "\0")) // если строка не пустая
 	{
@@ -409,6 +409,7 @@ int main(int argc, char **argv, char **envp)
 	t_terminal term;
 
 	signal(SIGTSTP, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, ft_print_n);
 	init_t_teminal(&term, argc, argv, envp);
 	if (term.fd.history != -1)

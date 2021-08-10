@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   terminal_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/31 15:26:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/07/31 15:26:50 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/10 21:50:58 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,16 +42,44 @@ void free_env(t_list_env *env)
 	}
 }
 
+void ft_exit_utils(t_terminal *term)
+{
+	int	i;
+
+	i = 0;
+	while (term->line != NULL && (term->line)[i] != '\0')
+	{
+		if ((term->line)[i] == ' ')
+		{
+			while ((term->line)[i] == ' ')
+				i++;
+			if ((term->line)[i] != '\0')
+			{
+				ft_putstr_fd("minishell: exit: ", 1);
+				while ((term->line)[i] != '\0')
+				{
+					ft_putchar_fd((term->line)[i], 1);
+					i++;
+				}
+				ft_putstr_fd(": numeric argument required\n", 1);
+			}
+		}
+		i++;
+	}
+}
+
 void ft_exit(t_terminal *term) // выход из терминала и сохранение истории
 {
 	if (term->line && (term->history_cmd && ft_strcmp(term->line, term->history_cmd->command)))
 		ft_add_history(term);
 	save_history(term);
 	free_env(term->env);
+	ft_putstr_fd("exit\n", 1);
+	ft_exit_utils(term);
 	if (term->line != NULL)
 		free(term->line);
 	//free_history(term);
-	ft_putstr_fd("exit\n", 1);
+	//ft_putstr_fd("exit\n", 1);
 	exit(0);
 }
 
