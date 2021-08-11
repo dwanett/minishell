@@ -63,6 +63,14 @@ typedef struct s_flags
 	int		error;
 }				t_flags;
 
+typedef struct s_info_command
+{
+	char	**command;
+	int		is_def_command;
+	int		number_command;
+	struct s_info_command *next;
+}				t_info_command;
+
 typedef struct s_terminal
 {
 	char			*line;

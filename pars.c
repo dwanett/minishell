@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-
+/*
 int	ligic_cavichki(char *command) //Проверка правильности расстановки кавычек
 {
 	int ferst_pos;
@@ -50,7 +50,7 @@ int	ligic_cavichki(char *command) //Проверка правильности р
 	}
 	return (0);
 }
-
+*/
 int	logic_quotes(char *command, int *i, char a, int *size)
 {
 	if (a == ' ')
@@ -238,6 +238,7 @@ int	pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i)
 	return (0);
 }
 
+/*
 int		pars_cavichki(char **command, t_terminal *term) // Удаление кавычек из строки
 {
 	int i;
@@ -299,6 +300,7 @@ int		pars_cavichki(char **command, t_terminal *term) // Удаление кав�
 	*command = tmp;
 	return (0);
 }
+*/
 
 int ft_size_matrix_and_trim(char **matrix, char *c) // Обрезка пробелов в строке и подсчет команд между пайпами
 {
@@ -387,7 +389,7 @@ void pars_env_elem(t_terminal *term, char **command_cur) // Замена гло�
 	}
 }
 
-//oid par_std_out(t_terminal *term, char *tmp) // Парсинг перенаправления вывода
+//void par_std_out(t_terminal *term, char *tmp) // Парсинг перенаправления вывода
 //
 //	int i;
 

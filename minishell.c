@@ -232,53 +232,72 @@ int tmp_variable(char ***command, t_terminal *term)
 	return (0);
 }
 
-void command(t_terminal *term)
+void get_info_str_command(t_info_command **command_cur, t_terminal *term, char ***command_pipe, int ret)
 {
-	char ***command_pipe;
-	char **command_cur; // в список
+	t_info_command *last_elem;
+	t_info_command *tmp;
 	int i;
-	int j;
-	int ret;
-	int is_def_command; // в список
-	int number_command; // в список
 
 	i = 0;
-	ret = pre_pars(term, &command_pipe);
-	is_def_command = 0;
 	while (command_pipe[i] != NULL)
 	{
-		command_cur = command_pipe[i];
-		if (ret && *command_cur != NULL)
+		tmp = (t_info_command*)malloc(sizeof(t_info_command));
+		tmp->is_def_command = 0;
+		tmp->command = command_pipe[i];
+		if (ret && *(tmp->command) != NULL)
 		{
-			number_command = check_not_def_com(*command_cur, term->not_def_command); // возможно эти команды надо делать отдельным процессом, но хз
-			if (number_command == -1 && tmp_variable(&command_cur, term))												// проверка команд (они не дефолтные?)
-				is_def_command = check_def_command(&command_cur, term);				// Они не дефолтные! И есть в папке /bin. Или это не команды.
+			tmp->number_command = check_not_def_com(*(tmp->command), term->not_def_command); // возможно эти команды надо делать отдельным процессом, но хз
+			if (tmp->number_command == -1 && tmp_variable(&(tmp->command), term))												// проверка команд (они не дефолтные?)
+				tmp->is_def_command = check_def_command(&(tmp->command), term);				// Они не дефолтные! И есть в папке /bin. Или это не команды.
+		}
+		tmp->next = NULL;
+		if (i == 0)
+		{
+			(*command_cur) = tmp;
+			last_elem = (*command_cur);
+		}
+		else
+		{
+			last_elem->next = tmp;
+			last_elem = last_elem->next;
 		}
 		i++;
 	}
-	i = 0;
-	while (command_pipe[i] != NULL)
+}
+
+void command(t_terminal *term)
+{
+	char ***command_pipe;
+	t_info_command *command_cur;
+	t_info_command *tmp;
+	int j;
+	int ret;
+
+	ret = pre_pars(term, &command_pipe);
+	get_info_str_command(&command_cur, term, command_pipe, ret);
+	while (command_cur != NULL)
 	{
 		j = 0;
-		command_cur = command_pipe[i];
-		if (ret && *command_cur != NULL && (is_def_command || number_command != -1))
+		if (ret && *(command_cur->command) != NULL && (command_cur->is_def_command || command_cur->number_command != -1))
 		{
-			if (number_command != -1)
-				pars_not_def_command(&command_cur, term, number_command);	// обработка не дефолтных команд
+			if (command_cur->number_command != -1)
+				pars_not_def_command(&(command_cur->command), term, command_cur->number_command);	// обработка не дефолтных команд
 			else
-				pars_def_command(&command_cur, term);						// обработка дефолтных команд
+				pars_def_command(&(command_cur->command), term);						// обработка дефолтных команд
 		}
-		while (command_cur[j] != NULL)
+		while (command_cur->command[j] != NULL)
 		{
-			if (command_cur[j + 1] == NULL && term->flag.export != 2 && term->flag.def_com == 0)
-				update_variable_env(term, NULL, command_cur[j]);
+			if (command_cur->command[j + 1] == NULL && term->flag.export != 2 && term->flag.def_com == 0)
+				update_variable_env(term, NULL, command_cur->command[j]);
 			if (j == 0)
 				term->flag.def_com = 0;
-			free(command_cur[j]);
+			free(command_cur->command[j]);
 			j++;
 		}
-		free(command_cur);
-		i++;
+		free(command_cur->command);
+		tmp = command_cur;
+		command_cur = command_cur->next;
+		free(tmp);
 	}
 	free(command_pipe);
 }
