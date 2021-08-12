@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pars.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/12 18:14:12 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/12 18:35:56 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -360,6 +360,7 @@ void pars_env_elem(t_terminal *term, char **command_cur) // Замена гло�
 
 	i = 0;
 	open_one = 0;
+	open_two = 0;
 	while (((*command_cur))[i] != '\0')
 	{
 	    if (((*command_cur))[i] == '$' && open_one == 0 && (ft_isalpha(((*command_cur))[i + 1]) || ((*command_cur))[i + 1] == '_'))

@@ -41,25 +41,28 @@ int check_def_com(t_terminal *term, char *command, char **path) //Проверк
 		patch_env = ft_split(term->path->line, ':'); // получение путей из переменной среды PATH
 	while (patch_env && patch_env[i] != NULL)
 	{
-		dir = opendir(patch_env[i]); // открываем каждую директорию и проверяем наличие команды
-		dp = readdir(dir);
-		while (dp != NULL)
-		{
-			if (!ft_strcmp(command, dp->d_name))
-			{
-				closedir(dir);
-				*path = ft_strdup(patch_env[i]);
-				while (patch_env[j] != NULL)
-				{
-					free(patch_env[j]);
-					j++;
-				}
-				free(patch_env);
-				return (0);
-			}
-			dp = readdir(dir);
-		}
-		closedir(dir);
+		dir = opendir(patch_env[i]);
+		if (dir != NULL)// открываем каждую директорию и проверяем наличие команды
+        {
+            dp = readdir(dir);
+            while (dp != NULL)
+            {
+                if (!ft_strcmp(command, dp->d_name))
+                {
+                    closedir(dir);
+                    *path = ft_strdup(patch_env[i]);
+                    while (patch_env[j] != NULL)
+                    {
+                        free(patch_env[j]);
+                        j++;
+                    }
+                    free(patch_env);
+                    return (0);
+                }
+                dp = readdir(dir);
+            }
+            closedir(dir);
+        }
 		i++;
 	}
 	if (patch_env)
@@ -244,6 +247,7 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 	int i;
 
 	i = 0;
+	*command_cur = NULL;
 	while (command_pipe[i] != NULL)
 	{
 		tmp = (t_info_command*)malloc(sizeof(t_info_command));

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/07/30 20:06:08 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/12 19:47:34 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ typedef struct s_terminal
 	char			**start_env;
 }			t_terminal;
 
+void		rl_replace_line (const char *, int);
 void		free_history(t_terminal *term);											//terminal_utils.c
 void		ft_exit(t_terminal *term);												//terminal_utils.c
 void		ft_print_n();															//terminal_utils.c

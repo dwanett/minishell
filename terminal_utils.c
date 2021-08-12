@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/31 15:26:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/10 21:50:58 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/12 20:30:06 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,5 +85,20 @@ void ft_exit(t_terminal *term) // выход из терминала и сохр
 
 void ft_print_n() // CTRL C
 {
-	ft_putstr_fd("\nminishell$ ", 1);
+	int	i;
+
+	i = 0;
+	rl_on_new_line();
+	//tputs(save_cursor, 1, ft_putchar);
+	while (i != 12)
+	{
+		tputs(cursor_right, 1, ft_putchar);
+		i++;
+	}
+	tputs(delete_character, 1, ft_putchar);
+	tputs(cursor_left, 1, ft_putchar);
+	tputs(delete_character, 1, ft_putchar);
+	ft_putstr_fd("\n", 1);
+	rl_replace_line("", 0);
+	rl_redisplay();
 }

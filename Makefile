@@ -1,7 +1,8 @@
 NAME = minishell
 CC = gcc
 FLAGS = -Wall -Wextra #-Werror
-LIB = -L libft/
+LIB = -L libft/ -L ../../.brew/opt/readline/lib/
+HEADER = -I ../../.brew/opt/readline/include/readline/
 OPTION_LIB = -lft -ltermcap -lreadline
 LIBFT = make -C libft
 
@@ -23,7 +24,7 @@ libft:
 $(NAME): $(OBJ) libft
 	@echo "\n"
 	@echo "\033[0;32mCompiling minishell..."
-	@$(CC) $(FLAGS) $(OBJ) $(LIB) $(OPTION_LIB) -o $(NAME)
+	@$(CC) $(FLAGS) $(OBJ) $(HEADER) $(LIB) $(OPTION_LIB) -o $(NAME)
 	@echo "\n\033[0mDone !"
 
 %.o: %.c
