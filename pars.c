@@ -6,7 +6,7 @@
 /*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/12 14:55:38 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/12 18:14:12 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -414,12 +414,13 @@ char *get_name_file_and_fd(char *start_name_file, int *fd, char *tmp, int *i)
 	return (name);
 }
 
-void is_input_or_output(t_terminal *term, char *tmp, int *i)
+int is_input_or_output(t_terminal *term, char *tmp, int *i)
 {
 	int count;
 	char *start_name_file;
 	char *name;
 	int *fd;
+	char c;
 
 	count = 0;
 	if (term->fd.out != 0 && term->fd.out != -1 && term->fd.out != 1 && term->fd.out != 2)
@@ -430,29 +431,50 @@ void is_input_or_output(t_terminal *term, char *tmp, int *i)
 		fd = &(term->fd.out);
 	else
 		fd = &(term->fd.in);
+	c = tmp[*i];
 	while (tmp[*i] == '>' || tmp[*i] == '<' || tmp[*i] == ' ')
 	{
 		if (tmp[*i] == '>' || tmp[*i] == '<')
 			count++;
+		if ((tmp[*i] == '<' && count >= 2) || (tmp[*i] == '>' && count > 2))
+		{
+			ft_putstr_fd(tmp + *i - count, term->fd.error);
+			ft_putstr_fd(": error syntax\n", term->fd.error);
+			return (1);
+		}
 		(*i)++;
 	}
 	start_name_file = tmp + *i;
 	name = get_name_file_and_fd(start_name_file, fd, tmp, i);
 	if (name != NULL)
 	{
-		*fd = open(name, O_CREAT | O_EXCL | O_RDWR, S_IRWXU);
+		if (c == '>')
+		{
+			*fd = open(name, O_CREAT | O_EXCL | O_RDWR, S_IRWXU);
+			if (*fd == -1)
+			{
+				if (count == 2)
+					*fd = open(name, O_APPEND | O_RDWR);
+				else
+					*fd = open(name, O_TRUNC | O_RDWR);
+			}
+			free(name);
+		}
+		else
+			*fd = open(name, O_RDWR);
 		if (*fd == -1)
 		{
-			if (count == 2)
-				*fd = open(name, O_APPEND | O_RDWR);
-			else
-				*fd = open(name, O_TRUNC | O_RDWR);
+			ft_putstr_fd(name, term->fd.error);
+			ft_putstr_fd(": ", term->fd.error);
+			ft_putstr_fd(strerror(errno), term->fd.error);
+			ft_putstr_fd("\n", term->fd.error);
+			return (1);
 		}
-		free(name);
 	}
+	return (0);
 }
 
-void par_std_out(t_terminal *term, char **tmp) // Парсинг перенаправления вывода
+int par_std_out(t_terminal *term, char **tmp) // Парсинг перенаправления вывода
 {
 	int i;
 	int start;
@@ -469,7 +491,8 @@ void par_std_out(t_terminal *term, char **tmp) // Парсинг перенап�
 			start = i;
 			while ((*tmp)[start - 1] == ' ')
 				start--;
-			is_input_or_output(term, *tmp, &i);
+			if (is_input_or_output(term, *tmp, &i))
+				return (1);
 			end = i;
 			if (new_tmp != NULL)
 				free(new_tmp);
@@ -483,6 +506,7 @@ void par_std_out(t_terminal *term, char **tmp) // Парсинг перенап�
 		}
 		i++;
 	}
+	return (0);
 }
 
 void par_multi_cammand(t_terminal *term) // Проверка ;
@@ -515,7 +539,11 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 	*command_pipe = (char ***)malloc(sizeof(char **) * (size + 1));
 	while (i != size)
 	{
-		par_std_out(term, &tmp[i]); //определение потока вывода если он первый
+		if (par_std_out(term, &tmp[i]))//определение потока вывода если он первый
+		{
+			(*command_pipe)[i] = NULL;
+			ret = 0;
+		}
 		if (!ft_strncmp(tmp[i], "export", 6))
 		{
 			term->flag.export = 2;
