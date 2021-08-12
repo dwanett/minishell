@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pars.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/10 19:15:29 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/12 14:55:38 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -389,20 +389,101 @@ void pars_env_elem(t_terminal *term, char **command_cur) // Замена гло�
 	}
 }
 
-//void par_std_out(t_terminal *term, char *tmp) // Парсинг перенаправления вывода
-//
-//	int i;
+char *get_name_file_and_fd(char *start_name_file, int *fd, char *tmp, int *i)
+{
+	int j;
+	int size_name;
+	char *name;
 
-//	i = 0;
-//	while (tmp[i] != '\0')
-//	{
-//		if (tmp[i] == '>' || tmp[i] == '<')
-//		{
-//			if (!ft_strncmp(tmp + i, ">>", 2))
-//		}
-//		i++;
-//	}
-//
+	j = 0;
+	size_name = 0;
+	while (tmp[*i] != '\0' && tmp[*i] != '>' && tmp[*i] != '<' && tmp[*i] != ' ')
+	{
+		size_name++;
+		(*i)++;
+	}
+	name = (char*)malloc(sizeof(char) * (size_name + 1));
+	if (name == NULL)
+		return (NULL);
+	while (j != size_name)
+	{
+		name[j] = start_name_file[j];
+		j++;
+	}
+	name[j] = '\0';
+	return (name);
+}
+
+void is_input_or_output(t_terminal *term, char *tmp, int *i)
+{
+	int count;
+	char *start_name_file;
+	char *name;
+	int *fd;
+
+	count = 0;
+	if (term->fd.out != 0 && term->fd.out != -1 && term->fd.out != 1 && term->fd.out != 2)
+		close(term->fd.out);
+	if (term->fd.in != 0 && term->fd.in != -1 && term->fd.in != 1 && term->fd.in != 2)
+		close(term->fd.in);
+	if (tmp[*i] == '>')
+		fd = &(term->fd.out);
+	else
+		fd = &(term->fd.in);
+	while (tmp[*i] == '>' || tmp[*i] == '<' || tmp[*i] == ' ')
+	{
+		if (tmp[*i] == '>' || tmp[*i] == '<')
+			count++;
+		(*i)++;
+	}
+	start_name_file = tmp + *i;
+	name = get_name_file_and_fd(start_name_file, fd, tmp, i);
+	if (name != NULL)
+	{
+		*fd = open(name, O_CREAT | O_EXCL | O_RDWR, S_IRWXU);
+		if (*fd == -1)
+		{
+			if (count == 2)
+				*fd = open(name, O_APPEND | O_RDWR);
+			else
+				*fd = open(name, O_TRUNC | O_RDWR);
+		}
+		free(name);
+	}
+}
+
+void par_std_out(t_terminal *term, char **tmp) // Парсинг перенаправления вывода
+{
+	int i;
+	int start;
+	int end;
+	char *new_tmp;
+	char *fre;
+
+	i = 0;
+	new_tmp = NULL;
+	while ((*tmp)[i] != '\0')
+	{
+		if ((*tmp)[i] == '>' || (*tmp)[i] == '<')
+		{
+			start = i;
+			while ((*tmp)[start - 1] == ' ')
+				start--;
+			is_input_or_output(term, *tmp, &i);
+			end = i;
+			if (new_tmp != NULL)
+				free(new_tmp);
+			new_tmp = ft_strndup(*tmp, start);
+			fre = new_tmp;
+			new_tmp = ft_strjoin(new_tmp, (*tmp) + end);
+			free(fre);
+			free((*tmp));
+			(*tmp) = ft_strdup(new_tmp);
+			i = 0;
+		}
+		i++;
+	}
+}
 
 void par_multi_cammand(t_terminal *term) // Проверка ;
 {
@@ -434,7 +515,7 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 	*command_pipe = (char ***)malloc(sizeof(char **) * (size + 1));
 	while (i != size)
 	{
-		//par_std_out(); //определение потока вывода если он первый
+		par_std_out(term, &tmp[i]); //определение потока вывода если он первый
 		if (!ft_strncmp(tmp[i], "export", 6))
 		{
 			term->flag.export = 2;
@@ -446,7 +527,7 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 			//ret = 0;
 		if (pars_quotes(&tmp[i], term, command_pipe, i))
 		{
-		    (*command_pipe)[i] = NULL;
+			(*command_pipe)[i] = NULL;
 			ret = 0;
 		}								//он дальше не очень использовался и возникала сега
 		//par_std_out(); //определение потока вывода

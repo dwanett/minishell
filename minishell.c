@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/10 21:13:37 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/12 16:10:43 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,11 +136,16 @@ void pars_def_command(char ***command, t_terminal *term) // Обработка �
 	int status;
 
 	l = 0;
-	pid = fork(); // создание потока для выполения команды
 	update_variable_env(term, *command[0], ft_strrchr(*command[0], '/') + 1);
 	term->flag.def_com = 1;
+	pid = fork(); // создание потока для выполения команды
 	if (pid == 0)
+	{
+		dup2(term->fd.in, 0);
+		dup2(term->fd.out, 1);
+		dup2(term->fd.error, 2);
 		l = execve(*command[0], *command, term->start_env);
+	}
 	if (l == -1)
 	{
 		ft_putstr_fd(*command[0], term->fd.error);
@@ -304,9 +309,21 @@ void command(t_terminal *term)
 
 void init_term_fd(t_terminal *term) //инициализация потоков
 {
-	term->fd.in = STDIN;
-	term->fd.out = STDOUT;
-	term->fd.error = STDERROR;
+	if (term->fd.in != STDIN)
+	{
+		close(term->fd.in);
+		term->fd.in = STDIN;
+	}
+	if (term->fd.out != STDOUT)
+	{
+		close(term->fd.out);
+		term->fd.out = STDOUT;
+	}
+	if (term->fd.error != STDERROR)
+	{
+		close(term->fd.error);
+		term->fd.error = STDERROR;
+	}
 }
 
 void teminal(t_terminal *term) //чтение строк терминала
@@ -416,6 +433,9 @@ void init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 	term->flag.error = 0;
 	term->line = NULL;
 	term->history_cmd = NULL;
+	term->fd.in = STDIN;
+	term->fd.out = STDOUT;
+	term->fd.error = STDERROR;
 	term->not_def_command[0] = "cd";
 	term->not_def_command[1] = "export";
 	term->not_def_command[2] = "unset";

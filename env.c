@@ -50,6 +50,8 @@ char *is_valid_env_arg(char **command)
 	{
 		if (count_symbol_str(command[i], '=') == 0)
 		{
+			if (*command[i] == '\0')
+				return (NULL);
 			open(command[i], O_RDWR);
 			return (command[i]);
 		}
