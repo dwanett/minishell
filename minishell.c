@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/12 18:03:42 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/12 21:25:03 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -336,7 +336,7 @@ void teminal(t_terminal *term) //чтение строк терминала
 	if (term->line != NULL)
 		free(term->line);
 	term->line = readline("minishell$ ");
-	if (term->line == NULL || !ft_strccmp(term->line, "exit", ' ')) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
+	if (term->line == NULL || !ft_strnccmp(term->line, "exit", ' ', 5)) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
 		ft_exit(term);
 	else if (ft_strcmp(term->line, "\0")) // если строка не пустая
 	{
@@ -571,6 +571,8 @@ int main(int argc, char **argv, char **envp)
 // Бывает, что нет перевода строки терминала при нажатии всяких кнопок с ctrl
 
 //-----------ТЕСТИРОВАТЬ-----------
+//	test6 <  grep HOME
+// < test6 grep HOME
 //	env > lol | grep HOME
 //	Тестировать кавычки и переменные среды
 //	a=linuxcareer.com; echo $a linuxcareer.com

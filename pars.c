@@ -495,6 +495,8 @@ int par_std_out(t_terminal *term, char **tmp) // Парсинг перенапр
 			if (is_input_or_output(term, *tmp, &i))
 				return (1);
 			end = i;
+			while ((*tmp)[end] == ' ')
+			    end++;
 			if (new_tmp != NULL)
 				free(new_tmp);
 			new_tmp = ft_strndup(*tmp, start);

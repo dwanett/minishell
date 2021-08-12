@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/31 15:26:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/12 20:30:06 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/12 21:33:30 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ void ft_exit_utils(t_terminal *term)
 	int	i;
 
 	i = 0;
+	while (term->line != NULL && (term->line)[i] == ' ')
+				i++;
 	while (term->line != NULL && (term->line)[i] != '\0')
 	{
 		if ((term->line)[i] == ' ')
