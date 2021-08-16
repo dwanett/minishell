@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pars.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 20:16:14 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 21:02:12 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -378,16 +378,21 @@ int is_input_or_output(t_terminal *term, char *tmp, int *i)
 	return (0);
 }
 
-int par_std_out(t_terminal *term, char **tmp) // Парсинг перенаправления вывода
+int par_std_out(t_terminal *term, char **tmp, t_info_command **command_cur, t_info_command **last_elem) // Парсинг перенаправления вывода
 {
 	int i;
 	int start;
 	int end;
 	char *new_tmp;
 	char *fre;
+	t_info_command *tmp_com;
 
 	i = 0;
 	new_tmp = NULL;
+	tmp_com = (t_info_command*)malloc(sizeof(t_info_command));
+	if (tmp_com == NULL)
+		print_error(NULL, strerror(errno), 0, term);
+	tmp_com->next = NULL;
 	while ((*tmp)[i] != '\0')
 	{
 		if ((*tmp)[i] == '>' || (*tmp)[i] == '<')
@@ -412,6 +417,21 @@ int par_std_out(t_terminal *term, char **tmp) // Парсинг перенапр
 		}
 		i++;
 	}
+	tmp_com->fd.in = term->fd.in;
+	tmp_com->fd.out = term->fd.out;
+	tmp_com->fd.error = term->fd.error;
+	tmp_com->fd.history = term->fd.history;
+	if ((*command_cur)  == NULL)
+	{
+		(*command_cur) = tmp_com;
+		(*last_elem) = (*command_cur);
+	}
+	else
+	{
+		(*last_elem)->next = tmp_com;
+		(*last_elem) = (*last_elem)->next;
+
+	}
 	return (0);
 }
 
@@ -430,16 +450,18 @@ void par_multi_cammand(t_terminal *term) // Проверка ;
 	}
 }
 
-int pre_pars(t_terminal *term, char ****command_pipe) // Главная функция парсера
+int pre_pars(t_terminal *term, char ****command_pipe, t_info_command **command_cur) // Главная функция парсера
 {
 	int size;
 	int i;
 	char **tmp;
 	int ret;
+	t_info_command *last_elem;
 
 	i = 0;
 	ret = 1;
 	par_multi_cammand(term);
+	(*command_cur) = NULL;
 	tmp = ft_split(term->line, '|');
 	size = ft_size_matrix_and_trim(tmp, " ");
 	*command_pipe = (char ***)malloc(sizeof(char **) * (size + 1));
@@ -447,7 +469,7 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 		print_error(NULL, strerror(errno), 0, term);
 	while (i != size)
 	{
-		if (par_std_out(term, &tmp[i]))//определение потока вывода если он первый
+		if (par_std_out(term, &tmp[i], command_cur, &last_elem))//определение потока вывода если он первый
 		{
 			(*command_pipe)[i] = NULL;
 			ret = 0;

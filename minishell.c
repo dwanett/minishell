@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 20:16:39 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 21:38:11 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,43 +254,54 @@ void	pipe_command(t_terminal *term, t_info_command **command_cur, char ***comman
 
 void get_info_str_command(t_info_command **command_cur, t_terminal *term, char ***command_pipe, int ret)
 {
-	t_info_command *last_elem;
 	t_info_command *tmp;
 	int				fd[2];
 	int 			i;
 
 	i = 0;
-	fd[0] = -1;
+	fd[0] = STDIN;
 	fd[1] = -1;
-	*command_cur = NULL;
+	tmp = (*command_cur);
 	while (command_pipe[i] != NULL)
 	{
-		tmp = (t_info_command*)malloc(sizeof(t_info_command));
-		if (tmp == NULL)
-			print_error(NULL, strerror(errno), 0, term);
-		if (i == 0)
+		if (i != 0)
+			tmp->fd.in = fd[0];
+		pipe(fd);
+		if (tmp->fd.out == STDOUT)
 		{
-			pipe_command(term, &tmp, command_pipe);
-			if (tmp->fd.in != term->fd.in && tmp->fd.out != term->fd.out)
-			{
-				if (term->fd.out == STDOUT)
-				{
-					pipe(fd);
-					tmp->fd.in = term->fd.in;
-					tmp->fd.out = fd[1];
-					tmp->fd.error = term->fd.error;
-					tmp->fd.history = term->fd.history;
-				}
-				else
-				{
-				    pipe(fd);
-					tmp->fd.in = term->fd.in;
-					tmp->fd.out = term->fd.out;
-					tmp->fd.error = term->fd.error;
-					tmp->fd.history = term->fd.history;
-				}
-			}
+			//if (i == 0)
+				//tmp->fd.in = term->fd.in;
+			if (command_pipe[i + 1] == NULL)
+				tmp->fd.out = STDOUT;
+			else
+				tmp->fd.out = fd[1];
 		}
+		else
+		{
+			write(fd[1], "\0", 1);
+			close(fd[1]);
+			//tmp->fd.in = fd[0];
+		}
+		//pipe_command(term, &tmp, command_pipe);
+		//if (tmp->fd.in != term->fd.in && tmp->fd.out != term->fd.out)
+		//{
+		//	if (term->fd.out == STDOUT)
+		//	{
+		//		pipe(fd);
+		//		tmp->fd.in = term->fd.in;
+		//		tmp->fd.out = fd[1];
+		//		tmp->fd.error = term->fd.error;
+		//		tmp->fd.history = term->fd.history;
+		//	}
+		//	else
+		//	{
+		//		pipe(fd);
+		//		tmp->fd.in = term->fd.in;
+		//		tmp->fd.out = term->fd.out;
+		//		tmp->fd.error = term->fd.error;
+		//		tmp->fd.history = term->fd.history;
+		//	}
+		//}
 		tmp->is_def_command = 0;
 		tmp->command = command_pipe[i];
 		if (ret && *(tmp->command) != NULL)
@@ -299,34 +310,31 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 			if (tmp->number_command == -1 && tmp_variable(&(tmp->command), term))												// проверка команд (они не дефолтные?)
 				tmp->is_def_command = check_def_command(&(tmp->command), term);				// Они не дефолтные! И есть в папке /bin. Или это не команды.
 		}
-		tmp->next = NULL;
-		if (i == 0)
-		{
-			(*command_cur) = tmp;
-			last_elem = (*command_cur);
-		}
-		else
-		{
-			tmp->fd.in = fd[0];
-			if (i == 1 && term->fd.out != STDOUT)
-			{
-			    write(fd[1], "\0", 1);
-			    close(fd[1]);
-			}
-			if (command_pipe[i + 1] == NULL)
-                tmp->fd.out = STDOUT;
-			else
-			{
-				pipe(fd);
-				//tmp->fd.in = fd[1];
-				tmp->fd.out = fd[1];
-			}
-			tmp->fd.error = term->fd.error;
-			tmp->fd.history = term->fd.history;
-			last_elem->next = tmp;
-			last_elem = last_elem->next;
-
-		}
+		//if (i == 0)
+		//{
+		//	(*command_cur) = tmp;
+		//	last_elem = (*command_cur);
+		//}
+		//else
+		//{
+		//	tmp->fd.in = fd[0];
+		//	if (i == 1 && term->fd.out != STDOUT)
+		//	{
+		//		write(fd[1], "\0", 1);
+		//		close(fd[1]);
+		//	}
+		//	if (command_pipe[i + 1] == NULL)
+		//		tmp->fd.out = STDOUT;
+		//	else
+		//	{
+		//		pipe(fd);
+		//		//tmp->fd.in = fd[1];
+		//		tmp->fd.out = fd[1];
+		//	}
+		//	tmp->fd.error = term->fd.error;
+		//	tmp->fd.history = term->fd.history;
+		//}
+		tmp = tmp->next;
 		i++;
 	}
 }
@@ -339,7 +347,7 @@ void	command(t_terminal *term)
 	int				j;
 	int				ret;
 
-	ret = pre_pars(term, &command_pipe);
+	ret = pre_pars(term, &command_pipe, &command_cur);
 	get_info_str_command(&command_cur, term, command_pipe, ret);
 	while (command_cur != NULL)
 	{
@@ -418,7 +426,7 @@ void	teminal(t_terminal *term) //чтение строк терминала
 		command(term); //функция обработки команд
 		if (term->flag.error == 1)
 			ft_putstr_fd(";: error syntax\n", term->fd.error);
-		term->flag.error = 0;
+			term->flag.error = 0;
 	}
 }
 
