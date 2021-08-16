@@ -3,19 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   env.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/02 15:28:39 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 16:48:01 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/16 21:54:09 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void update_variable_env(t_terminal *term, char *path_com, char *last_arg)
+void	update_variable_env(t_terminal *term, char *path_com,
+		char *last_arg, t_list_env *tmp)
 {
-	t_list_env *tmp;
-
 	if (term->update == NULL)
 	{
 		tmp = (t_list_env *)malloc(sizeof(t_list_env));
@@ -43,9 +42,9 @@ void update_variable_env(t_terminal *term, char *path_com, char *last_arg)
 	}
 }
 
-char *is_valid_env_arg(char **command)
+char	*is_valid_env_arg(char **command)
 {
-	int i;
+	int	i;
 
 	i = 1;
 	while (command[i] != NULL)
@@ -62,45 +61,50 @@ char *is_valid_env_arg(char **command)
 	return (NULL);
 }
 
-void ft_env(t_terminal *term, int flag, char ***command)
+void	ft_env_help(t_list_env *tmp, t_terminal *term, int flag)
 {
-	t_list_env *tmp;
-	char *check_error;
-	int i;
+	while (tmp != NULL)
+	{
+		if (flag == 1)
+		{
+			update_variable_env(term, "/usr/bin/export", "export", NULL);
+			if (ft_strcmp(tmp->name, "_"))
+			{
+				ft_putstr_fd("declare -x ",
+					term->fd.out);
+				ft_putstr_fd(tmp->name, term->fd.out);
+				ft_putstr_fd("=\"", term->fd.out);
+				ft_putstr_fd(tmp->line, term->fd.out);
+				ft_putstr_fd("\"", term->fd.out);
+				ft_putstr_fd("\n", term->fd.out);
+			}
+		}
+		else if (tmp->tmp_variable == 0)
+		{
+			ft_putstr_fd(tmp->name, term->fd.out);
+			ft_putstr_fd("=", term->fd.out);
+			ft_putstr_fd(tmp->line, term->fd.out);
+			ft_putstr_fd("\n", term->fd.out);
+		}
+		tmp = tmp->next;
+	}
+}
+
+void	ft_env(t_terminal *term, int flag, char ***command)
+{
+	t_list_env	*tmp;
+	char		*check_error;
+	int			i;
 
 	tmp = term->env;
 	i = 1;
 	check_error = NULL;
-	update_variable_env(term, "/usr/bin/env", "env");
+	update_variable_env(term, "/usr/bin/env", "env", NULL);
 	if (command != NULL)
 		check_error = is_valid_env_arg((*command));
-	if(check_error == NULL || flag == 1)
+	if (check_error == NULL || flag == 1)
 	{
-		while (tmp != NULL)
-		{
-			if (flag == 1)
-			{
-				update_variable_env(term, "/usr/bin/export", "export");
-				if (ft_strcmp(tmp->name, "_"))
-				{
-					ft_putstr_fd("declare -x ",
-							term->fd.out); //есть еще кавычки //тестируй без аргументов команду export
-					ft_putstr_fd(tmp->name, term->fd.out);
-					ft_putstr_fd("=\"", term->fd.out);
-					ft_putstr_fd(tmp->line, term->fd.out);
-					ft_putstr_fd("\"", term->fd.out);
-					ft_putstr_fd("\n", term->fd.out);
-				}
-			}
-			else if (tmp->tmp_variable == 0)
-			{
-				ft_putstr_fd(tmp->name, term->fd.out);
-				ft_putstr_fd("=", term->fd.out);
-				ft_putstr_fd(tmp->line, term->fd.out);
-				ft_putstr_fd("\n", term->fd.out);
-			}
-			tmp = tmp->next;
-		}
+		ft_env_help(tmp, term, flag);
 		if (flag == 0)
 		{
 			while ((*command)[i] != NULL)
@@ -115,10 +119,30 @@ void ft_env(t_terminal *term, int flag, char ***command)
 		print_error(check_error, strerror(errno), 1, term);
 }
 
-void del_element_env(char *elem, t_terminal *term) //Удаление переменной
+void	del_element_env_help(t_terminal *term,
+		t_list_env **tmp, t_list_env **prev)
 {
-	t_list_env *tmp;
-	t_list_env *prev;
+	(*prev)->next = (*tmp)->next;
+	if (!ft_strcmp((*tmp)->name, "PATH"))
+		term->path = NULL;
+	free((*tmp)->name);
+	free((*tmp)->line);
+	if ((*tmp)->update_variable != NULL)
+	{
+		free((*tmp)->update_variable);
+		free(term->update);
+		term->update = NULL;
+	}
+	else
+		free((*tmp));
+	(*tmp) = (*prev);
+}
+
+//Удаление переменной
+void	del_element_env(char *elem, t_terminal *term)
+{
+	t_list_env	*tmp;
+	t_list_env	*prev;
 
 	tmp = term->env;
 	prev = tmp;
@@ -129,38 +153,23 @@ void del_element_env(char *elem, t_terminal *term) //Удаление перем
 			if (prev == term->env)
 				term->env = term->env->next;
 			else
-			{
-				prev->next = tmp->next;
-				if (!ft_strcmp(tmp->name, "PATH"))
-					term->path = NULL;
-				free(tmp->name);
-				free(tmp->line);
-				if (tmp->update_variable != NULL)
-				{
-					free(tmp->update_variable);
-					free(term->update);
-					term->update = NULL;
-				}
-				else
-					free(tmp);
-				tmp = prev;
-			}
-			break;
+				del_element_env_help(term, &tmp, &prev);
+			break ;
 		}
 		prev = tmp;
 		tmp = tmp->next;
 	}
 }
 
-int is_name(char *elem, int flag)
+int	is_name(char *elem, int flag)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (elem[i] != '\0')
 	{
 		if (flag == 1 && elem[i] == '=' && i != 0)
-			break;
+			break ;
 		if (!ft_isalpha(elem[i]) && elem[i] != '_')
 			return (1);
 		i++;
@@ -168,24 +177,26 @@ int is_name(char *elem, int flag)
 	return (0);
 }
 
-void ft_unset(char ***command, t_terminal *term, int size_arg) // не всегда удаляет переменную (причина неизвестна)
+// не всегда удаляет переменную (причина неизвестна)
+void	ft_unset(char ***command, t_terminal *term, int size_arg)
 {
-	int i;
+	int	i;
 
 	i = 1;
 	while (i != size_arg)
 	{
 		if (!is_name(*(*command + i), 0))
-			del_element_env(*(*command + i), term); //Удаление переменной
+			del_element_env(*(*command + i), term);
 		else
 			print_error(*(*command + i), "not a valid identifier", 2, term);
 		i++;
 	}
 }
 
-int is_new_perem_export(char *peremen, t_list_env *env) //Проверка на дубликат переменной
+//Проверка на дубликат переменной
+int	is_new_perem_export(char *peremen, t_list_env *env)
 {
-	t_list_env *tmp;
+	t_list_env	*tmp;
 
 	tmp = env;
 	while (tmp != NULL)
@@ -197,10 +208,11 @@ int is_new_perem_export(char *peremen, t_list_env *env) //Проверка на 
 	return (0);
 }
 
-int is_ravenstvo(char *peremen) //проверка на символ =
+//проверка на символ =
+int	is_ravenstvo(char *peremen)
 {
-	int i;
-	int j;
+	int	i;
+	int	j;
 
 	i = 0;
 	j = 0;
@@ -213,39 +225,46 @@ int is_ravenstvo(char *peremen) //проверка на символ =
 	return (j);
 }
 
-void ft_export(char ***command, t_terminal *term, int size_arg)
+void	ft_export_help(char ***command, t_terminal *term, t_list_env **new_env, int i)
 {
-	t_list_env *new_env;
-	t_list_env *tmp;
-	int i;
+	while (term->env && term->env->next != NULL)
+		term->env = term->env->next;
+	(*new_env) = (t_list_env *)malloc(sizeof(t_list_env));
+	if ((*new_env) == NULL)
+		print_error(NULL, strerror(errno), 0, term);
+	(*new_env)->name = ft_strndup(*(*command + i),
+			 ft_strclen(*(*command + i), '='));
+	if (!ft_strcmp((*new_env)->name, "PATH"))
+		term->path = (*new_env);
+	(*new_env)->line = ft_strdup(*(*command + i)
+			+ ft_strclen(*(*command + i), '=') + 1);
+	update_variable_env(term, NULL, (*new_env)->name, NULL);
+	(*new_env)->next = NULL;
+}
+
+void	ft_export(char ***command, t_terminal *term, int size_arg)
+{
+	t_list_env	*new_env;
+	t_list_env	*tmp;
+	int			i;
 
 	i = 1;
 	tmp = term->env;
-	if (!*(*command + 1)) // если нет аргументов
+	if (!*(*command + 1))
 	{
 		ft_env(term, 1, NULL);
-		return;
+		return ;
 	}
 	while (i != size_arg)
 	{
 		term->env = tmp;
-		if (is_ravenstvo(*(*command + i))) //есть ли равно?
+		if (is_ravenstvo(*(*command + i)))
 		{
-			if (!is_name(*(*command + i), 1) && term->flag.export != 1) //имя состоит из букв?
+			if (!is_name(*(*command + i), 1) && term->flag.export != 1)
 			{
-				if (is_new_perem_export(*(*command + i), tmp))				//если такая переменная уже есть, то удалить ее
-					del_element_env(*(*command + i), term); //Удаление переменной
-				while (term->env && term->env->next != NULL)
-					term->env = term->env->next;
-				new_env = (t_list_env *)malloc(sizeof(t_list_env));
-				if (new_env == NULL)
-					print_error(NULL, strerror(errno), 0, term);
-				new_env->name = ft_strndup(*(*command + i), ft_strclen(*(*command + i), '='));
-				if (!ft_strcmp(new_env->name, "PATH"))
-					term->path = new_env;
-				new_env->line = ft_strdup(*(*command + i) + ft_strclen(*(*command + i), '=') + 1);
-				update_variable_env(term, NULL, new_env->name);
-				new_env->next = NULL;
+				if (is_new_perem_export(*(*command + i), tmp))
+					del_element_env(*(*command + i), term);
+				ft_export_help(command, term, &new_env, i);
 				if (term->env)
 					term->env->next = new_env;
 				else
@@ -258,4 +277,3 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 	}
 	term->env = tmp;
 }
-

@@ -6,13 +6,14 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 20:16:39 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 21:24:11 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	check_not_def_com(char *line, char **not_def_com) //Проверка команды по списку не дефолтных
+//Проверка команды по списку не дефолтных
+int	check_not_def_com(char *line, char **not_def_com)
 {
 	int	i;
 
@@ -26,7 +27,8 @@ int	check_not_def_com(char *line, char **not_def_com) //Проверка ком�
 	return (-1);
 }
 
-int	check_def_com(t_terminal *term, char *command, char **path) //Проверка /bin
+// Проверка bin
+int	check_def_com(t_terminal *term, char *command, char **path)
 {
 	DIR				*dir;
 	struct dirent	*dp;
@@ -38,11 +40,11 @@ int	check_def_com(t_terminal *term, char *command, char **path) //Проверк
 	j = 0;
 	patch_env = NULL;
 	if (term->path)
-		patch_env = ft_split(term->path->line, ':'); // получение путей из переменной среды PATH
+		patch_env = ft_split(term->path->line, ':'); //получение путей из переменной среды PATH
 	while (patch_env && patch_env[i] != NULL)
 	{
 		dir = opendir(patch_env[i]);
-		if (dir != NULL)// открываем каждую директорию и проверяем наличие команды
+		if (dir != NULL)//открываем каждую директорию и проверяем наличие команды
 		{
 			dp = readdir(dir);
 			while (dp != NULL)
@@ -93,7 +95,7 @@ int	count_symbol_str(const char *str, char c)
 	return (count);
 }
 
-int	is_path(const char *command)//Это путь?
+int	is_path(const char *command) //Это путь?
 {
 	int	i;
 
@@ -109,12 +111,14 @@ int	is_path(const char *command)//Это путь?
 
 int	check_def_command(char ***command, t_terminal *term)
 {
-	char *path;
-	char *tmp;
+	char	*path;
+	char	*tmp;
 
-	if (!is_path(**command)) // Если это не путь то
+	// Если это не путь то
+	if (!is_path(**command))
 	{
-		if (check_def_com(term, **command, &path)) //это команда? (если есть файл в /bin - это команда)
+		//это команда? (если есть файл в /bin - это команда)
+		if (check_def_com(term, **command, &path))
 		{
 			print_error(*command[0], "command not found", -1, term);
 			return (0);
@@ -130,11 +134,12 @@ int	check_def_command(char ***command, t_terminal *term)
 	return (1);
 }
 
-void pars_def_command(char ***command, t_terminal *term) // Обработка команд /bin или не команд // Не работает с переменными среды
+// Обработка команд /bin или не команд // Не работает с переменными среды
+void	pars_def_command(char ***command, t_terminal *term)
 {
-	pid_t pid;
-	int l;
-	int status;
+	pid_t	pid;
+	int		l;
+	int		status;
 
 	l = 0;
 	update_variable_env(term, *command[0], ft_strrchr(*command[0], '/') + 1);
@@ -154,7 +159,7 @@ void pars_def_command(char ***command, t_terminal *term) // Обработка �
 
 void ft_cd(char ***command, int i, t_terminal *term) // команда cd
 {
-	int ret;
+	int	ret;
 
 	if (i >= 3)
 	{
@@ -172,7 +177,8 @@ void ft_cd(char ***command, int i, t_terminal *term) // команда cd
 	}
 }
 
-void	pars_not_def_command(char ***command, t_terminal *term, int i) // Обработка не дефолтных
+// Обработка не дефолтных
+void	pars_not_def_command(char ***command, t_terminal *term, int i)
 {
 	char	**tmp;
 	int		j;
@@ -199,38 +205,37 @@ void	pars_not_def_command(char ***command, t_terminal *term, int i) // Обра�
 		ft_env(term, 0, command);
 }
 
-int		tmp_variable(char ***command, t_terminal *term)
+int		tmp_variable(char ***command, t_terminal *term, int i)
 {
 	t_list_env	*tmp;
-	int			i;
 
-	i = 0;
 	while ((*command)[i] != NULL)
 	{
 		if (count_symbol_str((*command)[i], '=') == 0)
 			return (1);
 		i++;
 	}
-	i = 0;
-	while ((*command)[i] != NULL)
+	i = -1;
+	while ((*command)[++i] != NULL)
 	{
 		tmp = (t_list_env *)malloc(sizeof(t_list_env));
 		if (tmp == NULL)
 			print_error(NULL, strerror(errno), 0, term);
 		tmp->update_variable = NULL;
 		tmp->name = ft_strndup((*command)[i], ft_strclen((*command)[i], '='));
-		tmp->line = ft_strdup((*command)[i] + ft_strclen((*command)[i], '=') + 1);
+		tmp->line = ft_strdup((*command)[i]
+				+ ft_strclen((*command)[i], '=') + 1);
 		tmp->tmp_variable = 1;
 		tmp->next = term->env;
 		term->env = tmp;
 		term->flag.export = 2;
-		i++;
 	}
 	update_variable_env(term, NULL, "");
 	return (0);
 }
 
-void	pipe_command(t_terminal *term, t_info_command **command_cur, char ***command_pipe)
+void	pipe_command(t_terminal *term,
+	t_info_command **command_cur, char ***command_pipe)
 {
 	int	i;
 
@@ -252,12 +257,13 @@ void	pipe_command(t_terminal *term, t_info_command **command_cur, char ***comman
 	}
 }
 
-void get_info_str_command(t_info_command **command_cur, t_terminal *term, char ***command_pipe, int ret)
+void get_info_str_command(t_info_command **command_cur,
+	t_terminal *term, char ***command_pipe, int ret)
 {
-	t_info_command *last_elem;
-	t_info_command *tmp;
+	t_info_command	*last_elem;
+	t_info_command	*tmp;
 	int				fd[2];
-	int 			i;
+	int				i;
 
 	i = 0;
 	fd[0] = -1;
@@ -265,7 +271,7 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 	*command_cur = NULL;
 	while (command_pipe[i] != NULL)
 	{
-		tmp = (t_info_command*)malloc(sizeof(t_info_command));
+		tmp = (t_info_command *)malloc(sizeof(t_info_command));
 		if (tmp == NULL)
 			print_error(NULL, strerror(errno), 0, term);
 		if (i == 0)
@@ -283,7 +289,7 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 				}
 				else
 				{
-				    pipe(fd);
+					pipe(fd);
 					tmp->fd.in = term->fd.in;
 					tmp->fd.out = term->fd.out;
 					tmp->fd.error = term->fd.error;
@@ -295,8 +301,10 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 		tmp->command = command_pipe[i];
 		if (ret && *(tmp->command) != NULL)
 		{
-			tmp->number_command = check_not_def_com(*(tmp->command), term->not_def_command); // возможно эти команды надо делать отдельным процессом, но хз
-			if (tmp->number_command == -1 && tmp_variable(&(tmp->command), term))												// проверка команд (они не дефолтные?)
+			tmp->number_command = check_not_def_com(*(tmp->command),
+					term->not_def_command); // возможно эти команды надо делать отдельным процессом, но хз
+			if (tmp->number_command == -1
+				&& tmp_variable(&(tmp->command), term, 0))												// проверка команд (они не дефолтные?)
 				tmp->is_def_command = check_def_command(&(tmp->command), term);				// Они не дефолтные! И есть в папке /bin. Или это не команды.
 		}
 		tmp->next = NULL;
@@ -310,11 +318,11 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 			tmp->fd.in = fd[0];
 			if (i == 1 && term->fd.out != STDOUT)
 			{
-			    write(fd[1], "\0", 1);
-			    close(fd[1]);
+				write(fd[1], "\0", 1);
+				close(fd[1]);
 			}
 			if (command_pipe[i + 1] == NULL)
-                tmp->fd.out = STDOUT;
+				tmp->fd.out = STDOUT;
 			else
 			{
 				pipe(fd);
@@ -325,7 +333,6 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 			tmp->fd.history = term->fd.history;
 			last_elem->next = tmp;
 			last_elem = last_elem->next;
-
 		}
 		i++;
 	}
@@ -345,16 +352,20 @@ void	command(t_terminal *term)
 	{
 		j = 0;
 		term->fd = command_cur->fd;
-		if (ret && *(command_cur->command) != NULL && (command_cur->is_def_command || command_cur->number_command != -1))
+		if (ret && *(command_cur->command) != NULL
+			&& (command_cur->is_def_command
+				|| command_cur->number_command != -1))
 		{
 			if (command_cur->number_command != -1)
-				pars_not_def_command(&(command_cur->command), term, command_cur->number_command);	// обработка не дефолтных команд
+				pars_not_def_command(&(command_cur->command),
+					term, command_cur->number_command);	// обработка не дефолтных команд
 			else
-				pars_def_command(&(command_cur->command), term);						// обработка дефолтных команд
+				pars_def_command(&(command_cur->command), term);// обработка дефолтных команд
 		}
 		while (command_cur->command[j] != NULL)
 		{
-			if (command_cur->command[j + 1] == NULL && term->flag.export != 2 && term->flag.def_com == 0)
+			if (command_cur->command[j + 1] == NULL
+				&& term->flag.export != 2 && term->flag.def_com == 0)
 				update_variable_env(term, NULL, command_cur->command[j]);
 			if (j == 0)
 				term->flag.def_com = 0;
@@ -373,7 +384,7 @@ void	command(t_terminal *term)
 	free(command_pipe);
 }
 
-void	init_term_fd(t_terminal *term) //инициализация потоков
+int	init_term_fd(t_terminal *term) //инициализация потоков
 {
 	if (term->fd.in != STDIN)
 	{
@@ -390,12 +401,12 @@ void	init_term_fd(t_terminal *term) //инициализация потоков
 		close(term->fd.error);
 		term->fd.error = STDERROR;
 	}
+	return (1);
 }
 
 void	teminal(t_terminal *term) //чтение строк терминала
 {
-	init_term_fd(term); //переинициализация потоков
-	if (term->line != NULL)
+	if (init_term_fd(term) && term->line != NULL) //переинициализация потоков
 		free(term->line);
 	term->line = readline("minishell$ ");
 	if (term->line == NULL || !ft_strnccmp(term->line, "exit", ' ', 5)) // НАДО ПЕРЕНЕСТИ В КОМАНДЫ И ПРОВЕРИТЬ CASE exitr || exit r
@@ -418,23 +429,20 @@ void	teminal(t_terminal *term) //чтение строк терминала
 		command(term); //функция обработки команд
 		if (term->flag.error == 1)
 			ft_putstr_fd(";: error syntax\n", term->fd.error);
-		term->flag.error = 0;
+		//term->flag.error = 0;
 	}
 }
 
-void	init_env(t_list_env **env, char **envp, t_terminal *term)
+void	init_env(t_list_env **env, char **envp, t_terminal *term, int i)
 {
 	t_list_env	*tmp;
-	int			i;
 
-	i = 0;
 	while (envp[i] != NULL)
 		i++;
 	*env = NULL;
-	i--;
-	while(i >= 0)
+	while (--i >= 0)
 	{
-		tmp = (t_list_env*)malloc(sizeof(t_list_env));
+		tmp = (t_list_env *)malloc(sizeof(t_list_env));
 		if (tmp == NULL)
 			print_error(NULL, strerror(errno), 0, term);
 		tmp->name = ft_strndup(envp[i], ft_strclen(envp[i], '='));
@@ -450,25 +458,22 @@ void	init_env(t_list_env **env, char **envp, t_terminal *term)
 		}
 		tmp->next = *env;
 		*env = tmp;
-		i--;
 	}
 }
 
-void init_env_for_next_process(t_terminal *term, char **envp)
+void init_env_for_next_process(t_terminal *term, char **envp, int j)
 {
-	int size_env;
-	char *tmp;
-	char *itoa;
-	int j;
+	int		size_env;
+	char	*tmp;
+	char	*itoa;
 
 	size_env = 0;
-	j = 0;
 	while (envp[size_env] != NULL)
 		size_env++;
-	term->start_env = (char **)malloc(sizeof(char*) * (size_env + 1));
+	term->start_env = (char **)malloc(sizeof(char *) * (size_env + 1));
 	if (term->start_env == NULL)
 		print_error(NULL, strerror(errno), 0, term);
-	while (j != size_env)
+	while (++j != size_env)
 	{
 		if (ft_strncmp(envp[j], "SHLVL", 5))
 			term->start_env[j] = ft_strdup(envp[j]);
@@ -480,16 +485,15 @@ void init_env_for_next_process(t_terminal *term, char **envp)
 			free(tmp);
 			free(itoa);
 		}
-		j++;
 	}
 	term->start_env[j] = NULL;
 }
 
-void init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
+void	init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 {
 	term->update = NULL;
-	init_env_for_next_process(term, envp);
-	init_env(&term->env, term->start_env, term);
+	init_env_for_next_process(term, envp, -1);
+	init_env(&term->env, term->start_env, term, 0);
 	(void)argc;
 	(void)argv;
 	term->fd.history = -1;
@@ -508,9 +512,9 @@ void init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 	read_file_history(term);
 }
 
-int main(int argc, char **argv, char **envp)
+int	main(int argc, char **argv, char **envp)
 {
-	t_terminal term;
+	t_terminal	term;
 
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGQUIT, SIG_IGN);
@@ -525,112 +529,110 @@ int main(int argc, char **argv, char **envp)
 	return (0);
 }
 
+
 //-----------ЗАДАЧИ-----------
 //	Реализовать перенаправление вывода. Перенаправление стандартных потоков терминала(возможно не надо).
-/*{ https://www.opennet.ru/docs/RUS/bash_scripting_guide/c11620.html
-	COMMAND_OUTPUT >
-		# Перенаправление stdout (вывода) в файл.
-		# Если файл отсутствовал, то он создется, иначе -- перезаписывается.
-	: > filename
-		# Операция > усекает файл "filename" до нулевой длины.
-		# Если до выполнения операции файла не существовало,
-		# то создается новый файл с нулевой длиной (тот же эффект дает команда 'touch').
-		# Символ : выступает здесь в роли местозаполнителя, не выводя ничего.
-
-	> filename
-		# Операция > усекает файл "filename" до нулевой длины.
-		# Если до выполнения операции файла не существовало,
-		# то создается новый файл с нулевой длиной (тот же эффект дает команда 'touch').
-		# (тот же результат, что и выше -- ": >", но этот вариант неработоспособен
-		# в некоторых командных оболочках.)
-
-	COMMAND_OUTPUT >>
-		# Перенаправление stdout (вывода) в файл.
-		# Создает новый файл, если он отсутствовал, иначе -- дописывает в конец файла.
-		# Однострочные команды перенаправления
-		# (затрагивают только ту строку, в которой они встречаются):
-		# --------------------------------------------------------------------
-
-	1>filename
-		# Перенаправление вывода (stdout) в файл "filename".
-	1>>filename
-		# Перенаправление вывода (stdout) в файл "filename", файл открывается в режиме добавления.
-	2>filename
-		# Перенаправление stderr в файл "filename".
-	2>>filename
-		# Перенаправление stderr в файл "filename", файл открывается в режиме добавления.
-	&>filename
-		# Перенаправление stdout и stderr в файл "filename".
-
-		#==============================================================================
-		# Перенаправление stdout, только для одной строки.
-		LOGFILE=script.log
-
-		echo "Эта строка будет записана в файл \"$LOGFILE\"." 1>$LOGFILE
-		echo "Эта строка будет добавлена в конец файла \"$LOGFILE\"." 1>>$LOGFILE
-		echo "Эта строка тоже будет добавлена в конец файла \"$LOGFILE\"." 1>>$LOGFILE
-		echo "Эта строка будет выведена на экран и не попадет в файл \"$LOGFILE\"."
-		# После каждой строки, сделанное перенаправление автоматически "сбрасывается".
-
-
-
-		# Перенаправление stderr, только для одной строки.
-		ERRORFILE=script.errors
-
-		bad_command1 2>$ERRORFILE		#  Сообщение об ошибке запишется в $ERRORFILE.
-		bad_command2 2>>$ERRORFILE		#  Сообщение об ошибке добавится в конец $ERRORFILE.
-		bad_command3					#  Сообщение об ошибке будет выведено на stderr,
-										#+ и не попадет в $ERRORFILE.
-		# После каждой строки, сделанное перенаправление также автоматически "сбрасывается".
-		#==============================================================================
-
-
-	2>&1
-		# Перенаправляется stderr на stdout.
-		# Сообщения об ошибках передаются туда же, куда и стандартный вывод.
-
-	i>&j
-		# Перенаправляется файл с дескриптором i в j.
-		# Вывод в файл с дескриптором i передается в файл с дескриптором j.
-
-	>&j
-		# Перенаправляется  файл с дескриптором 1 (stdout) в файл с дескриптором j.
-		# Вывод на stdout передается в файл с дескриптором j.
-
-	0< FILENAME
-	< FILENAME
-		# Ввод из файла.
-		# Парная команде ">", часто встречается в комбинации с ней.
-		# grep search-word <filename
-
-
-	[j]<>filename
-		# Файл "filename" открывается на чтение и запись, и связывается с дескриптором "j".
-		# Если "filename" отсутствует, то он создается.
-		# Если дескриптор "j" не указан, то, по-умолчанию, бередся дескриптор 0, stdin.
-		#
-		# Как одно из применений этого -- запись в конкретную позицию в файле.
-		echo 1234567890 > File		# Записать строку в файл "File".
-		exec 3<> File				# Открыть "File" и связать с дескриптором 3.
-		read -n 4 <&3				# Прочитать 4 символа.
-		echo -n . >&3				# Записать символ точки.
-		exec 3>&-					# Закрыть дескриптор 3.
-		cat File					# ==> 1234.67890
-		# Произвольный доступ, да и только!
-}*/
-
+//{ https://www.opennet.ru/docs/RUS/bash_scripting_guide/c11620.html
+//	COMMAND_OUTPUT >
+//		# Перенаправление stdout (вывода) в файл.
+//		# Если файл отсутствовал, то он создется, иначе -- перезаписывается.
+//	: > filename
+//		# Операция > усекает файл "filename" до нулевой длины.
+//		# Если до выполнения операции файла не существовало,
+//		# то создается новый файл с нулевой длиной (тот же эффект дает команда 'touch').
+//		# Символ : выступает здесь в роли местозаполнителя, не выводя ничего.
+//
+//	> filename
+//		# Операция > усекает файл "filename" до нулевой длины.
+//		# Если до выполнения операции файла не существовало,
+//		# то создается новый файл с нулевой длиной (тот же эффект дает команда 'touch').
+//		# (тот же результат, что и выше -- ": >", но этот вариант неработоспособен
+//		# в некоторых командных оболочках.)
+//
+//	COMMAND_OUTPUT >>
+//		# Перенаправление stdout (вывода) в файл.
+//		# Создает новый файл, если он отсутствовал, иначе -- дописывает в конец файла.
+//		# Однострочные команды перенаправления
+//		# (затрагивают только ту строку, в которой они встречаются):
+//		# --------------------------------------------------------------------
+//
+//	1>filename
+//		# Перенаправление вывода (stdout) в файл "filename".
+//	1>>filename
+//		# Перенаправление вывода (stdout) в файл "filename", файл открывается в режиме добавления.
+//	2>filename
+//		# Перенаправление stderr в файл "filename".
+//	2>>filename
+//		# Перенаправление stderr в файл "filename", файл открывается в режиме добавления.
+//	&>filename
+//		# Перенаправление stdout и stderr в файл "filename".
+//
+//		#==============================================================================
+//		# Перенаправление stdout, только для одной строки.
+//		LOGFILE=script.log
+//
+//		echo "Эта строка будет записана в файл \"$LOGFILE\"." 1>$LOGFILE
+//		echo "Эта строка будет добавлена в конец файла \"$LOGFILE\"." 1>>$LOGFILE
+//		echo "Эта строка тоже будет добавлена в конец файла \"$LOGFILE\"." 1>>$LOGFILE
+//		echo "Эта строка будет выведена на экран и не попадет в файл \"$LOGFILE\"."
+//		# После каждой строки, сделанное перенаправление автоматически "сбрасывается".
+//
+//
+//
+//		# Перенаправление stderr, только для одной строки.
+//		ERRORFILE=script.errors
+//
+//		bad_command1 2>$ERRORFILE		#  Сообщение об ошибке запишется в $ERRORFILE.
+//		bad_command2 2>>$ERRORFILE		#  Сообщение об ошибке добавится в конец $ERRORFILE.
+//		bad_command3					#  Сообщение об ошибке будет выведено на stderr,
+//										#+ и не попадет в $ERRORFILE.
+//		# После каждой строки, сделанное перенаправление также автоматически "сбрасывается".
+//		#==============================================================================
+//
+//
+//	2>&1
+//		# Перенаправляется stderr на stdout.
+//		# Сообщения об ошибках передаются туда же, куда и стандартный вывод.
+//
+//	i>&j
+//		# Перенаправляется файл с дескриптором i в j.
+//		# Вывод в файл с дескриптором i передается в файл с дескриптором j.
+//
+//	>&j
+//		# Перенаправляется  файл с дескриптором 1 (stdout) в файл с дескриптором j.
+//		# Вывод на stdout передается в файл с дескриптором j.
+//
+//	0< FILENAME
+//	< FILENAME
+//		# Ввод из файла.
+//		# Парная команде ">", часто встречается в комбинации с ней.
+//		# grep search-word <filename
+//
+//
+//	[j]<>filename
+//		# Файл "filename" открывается на чтение и запись, и связывается с дескриптором "j".
+//		# Если "filename" отсутствует, то он создается.
+//		# Если дескриптор "j" не указан, то, по-умолчанию, бередся дескриптор 0, stdin.
+//		#
+//		# Как одно из применений этого -- запись в конкретную позицию в файле.
+//		echo 1234567890 > File		# Записать строку в файл "File".
+//		exec 3<> File				# Открыть "File" и связать с дескриптором 3.
+//		read -n 4 <&3				# Прочитать 4 символа.
+//		echo -n . >&3				# Записать символ точки.
+//		exec 3>&-					# Закрыть дескриптор 3.
+//		cat File					# ==> 1234.67890
+//		# Произвольный доступ, да и только!
+//}*/
+//
 //	Сделать пайпы.
 //	ЕСТЬ ЕБУЧИЙ ЛИК, КОТОРЫЙ Я НЕ МОГУ ПОФИКСТИЬ !!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 //-----------НЕ ЗАБЫТЬ-----------
 //	dup2(fd, 1); перенаправлени стандартного вывода в fd
 // не дефолтные команды не принимают через пайп
-
 //-----------ЗАМЕЧЕННЫЕ БАГИ-----------
 // unset не всегда удаляет переменную
 // env с аргументом должен выводить ошибку
 // Бывает, что нет перевода строки терминала при нажатии всяких кнопок с ctrl
-
 //-----------ТЕСТИРОВАТЬ-----------
 //	test6 <  grep HOME
 // < test6 grep HOME
