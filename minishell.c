@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/13 19:05:14 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 18:24:50 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,17 +240,61 @@ int tmp_variable(char ***command, t_terminal *term)
 	return (0);
 }
 
+void	pipe_command(t_terminal *term, t_info_command **command_cur, char ***command_pipe)
+{
+	int	i;
+
+	i = 0;
+	while (command_pipe[i] != NULL)
+		i++;
+	if (i == 1)
+	{
+		(*command_cur)->fd.in = term->fd.in;
+		(*command_cur)->fd.out = term->fd.out;
+		(*command_cur)->fd.error = term->fd.error;
+	}
+	else
+	{
+		(*command_cur)->fd.in = -1;
+		(*command_cur)->fd.out = -1;
+		(*command_cur)->fd.error = term->fd.error;
+	}
+}
+
 void get_info_str_command(t_info_command **command_cur, t_terminal *term, char ***command_pipe, int ret)
 {
 	t_info_command *last_elem;
 	t_info_command *tmp;
-	int i;
+	int				fd[2];
+	int 			i;
 
 	i = 0;
+	fd[0] = -1;
+	fd[1] = -1;
 	*command_cur = NULL;
 	while (command_pipe[i] != NULL)
 	{
 		tmp = (t_info_command*)malloc(sizeof(t_info_command));
+		if (i == 0)
+		{
+			pipe_command(term, &tmp, command_pipe);
+			if (tmp->fd.in != term->fd.in && tmp->fd.out != term->fd.out)
+			{
+				if (term->fd.out == STDOUT)
+				{
+					pipe(fd);
+					tmp->fd.in = term->fd.in;
+					tmp->fd.out = fd[1];
+					tmp->fd.error = term->fd.error;
+				}
+				else
+				{
+					tmp->fd.in = term->fd.in;
+					tmp->fd.out = term->fd.out;
+					tmp->fd.error = term->fd.error;
+				}
+			}
+		}
 		tmp->is_def_command = 0;
 		tmp->command = command_pipe[i];
 		if (ret && *(tmp->command) != NULL)
@@ -267,8 +311,22 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 		}
 		else
 		{
+			if (i == 1 && term->fd.out == STDOUT)
+				tmp->fd.in = fd[0];
+			else
+				tmp->fd.in = term->fd.in;
+			if (command_pipe[i + 1] == NULL)
+				tmp->fd.out = STDOUT;
+			else
+			{
+				pipe(fd);
+				//tmp->fd.in = fd[1];
+				tmp->fd.out = fd[1];
+			}
+			tmp->fd.error = term->fd.error;
 			last_elem->next = tmp;
 			last_elem = last_elem->next;
+
 		}
 		i++;
 	}
@@ -287,6 +345,7 @@ void command(t_terminal *term)
 	while (command_cur != NULL)
 	{
 		j = 0;
+		term->fd = command_cur->fd;
 		if (ret && *(command_cur->command) != NULL && (command_cur->is_def_command || command_cur->number_command != -1))
 		{
 			if (command_cur->number_command != -1)
@@ -303,6 +362,10 @@ void command(t_terminal *term)
 			free(command_cur->command[j]);
 			j++;
 		}
+		if (term->fd.out != STDOUT)
+			close(term->fd.out);
+		if (term->fd.in != STDIN)
+			close(term->fd.in);
 		free(command_cur->command);
 		tmp = command_cur;
 		command_cur = command_cur->next;

@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/12 19:47:34 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 16:40:05 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ typedef struct s_fd
 {
 	int	history;
 	int error;
-	int out;
+	int out; 
 	int in;
 }				t_fd;
 
@@ -68,6 +68,7 @@ typedef struct s_info_command
 	char	**command;
 	int		is_def_command;
 	int		number_command;
+	t_fd	fd;
 	struct s_info_command *next;
 }				t_info_command;
 
