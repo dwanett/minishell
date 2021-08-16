@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 18:41:47 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 20:16:39 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,6 +242,7 @@ void	pipe_command(t_terminal *term, t_info_command **command_cur, char ***comman
 		(*command_cur)->fd.in = term->fd.in;
 		(*command_cur)->fd.out = term->fd.out;
 		(*command_cur)->fd.error = term->fd.error;
+		(*command_cur)->fd.history = term->fd.history;
 	}
 	else
 	{
@@ -278,12 +279,15 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 					tmp->fd.in = term->fd.in;
 					tmp->fd.out = fd[1];
 					tmp->fd.error = term->fd.error;
+					tmp->fd.history = term->fd.history;
 				}
 				else
 				{
+				    pipe(fd);
 					tmp->fd.in = term->fd.in;
 					tmp->fd.out = term->fd.out;
 					tmp->fd.error = term->fd.error;
+					tmp->fd.history = term->fd.history;
 				}
 			}
 		}
@@ -303,12 +307,14 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 		}
 		else
 		{
-			if (i == 1 && term->fd.out == STDOUT)
-				tmp->fd.in = fd[0];
-			else
-				tmp->fd.in = term->fd.in;
+			tmp->fd.in = fd[0];
+			if (i == 1 && term->fd.out != STDOUT)
+			{
+			    write(fd[1], "\0", 1);
+			    close(fd[1]);
+			}
 			if (command_pipe[i + 1] == NULL)
-				tmp->fd.out = STDOUT;
+                tmp->fd.out = STDOUT;
 			else
 			{
 				pipe(fd);
@@ -316,6 +322,7 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 				tmp->fd.out = fd[1];
 			}
 			tmp->fd.error = term->fd.error;
+			tmp->fd.history = term->fd.history;
 			last_elem->next = tmp;
 			last_elem = last_elem->next;
 
