@@ -6,7 +6,7 @@
 /*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/02 15:28:39 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/02 15:28:39 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/16 16:48:01 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ void update_variable_env(t_terminal *term, char *path_com, char *last_arg)
 	if (term->update == NULL)
 	{
 		tmp = (t_list_env *)malloc(sizeof(t_list_env));
+		if (tmp == NULL)
+			print_error(NULL, strerror(errno), 0, term);
 		if (path_com != NULL)
 			tmp->line = ft_strdup(path_com);
 		else
@@ -110,13 +112,7 @@ void ft_env(t_terminal *term, int flag, char ***command)
 		}
 	}
 	else if (errno != 0)
-	{
-		ft_putstr_fd("env: ", term->fd.error);
-		ft_putstr_fd(check_error, term->fd.error);
-		ft_putstr_fd(": ", term->fd.error);
-		ft_putstr_fd(strerror(errno), term->fd.error);
-		ft_putstr_fd("\n", term->fd.error);
-	}
+		print_error(check_error, strerror(errno), 1, term);
 }
 
 void del_element_env(char *elem, t_terminal *term) //Удаление переменной
@@ -182,13 +178,7 @@ void ft_unset(char ***command, t_terminal *term, int size_arg) // не всег�
 		if (!is_name(*(*command + i), 0))
 			del_element_env(*(*command + i), term); //Удаление переменной
 		else
-		{
-			ft_putstr_fd("unset: ", term->fd.error);
-			ft_putstr_fd(*(*command + i), term->fd.error);
-			ft_putstr_fd(": ", term->fd.error);
-			ft_putstr_fd("not a valid identifier", term->fd.error);
-			ft_putstr_fd("\n", term->fd.error);
-		}
+			print_error(*(*command + i), "not a valid identifier", 2, term);
 		i++;
 	}
 }
@@ -248,6 +238,8 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 				while (term->env && term->env->next != NULL)
 					term->env = term->env->next;
 				new_env = (t_list_env *)malloc(sizeof(t_list_env));
+				if (new_env == NULL)
+					print_error(NULL, strerror(errno), 0, term);
 				new_env->name = ft_strndup(*(*command + i), ft_strclen(*(*command + i), '='));
 				if (!ft_strcmp(new_env->name, "PATH"))
 					term->path = new_env;
@@ -260,13 +252,7 @@ void ft_export(char ***command, t_terminal *term, int size_arg)
 					tmp = new_env;
 			}
 			else
-			{
-				ft_putstr_fd("export: ", term->fd.error);
-				ft_putstr_fd(*(*command + i), term->fd.error);
-				ft_putstr_fd(": ", term->fd.error);
-				ft_putstr_fd("not a valid identifier", term->fd.error);
-				ft_putstr_fd("\n", term->fd.error);
-			}
+				print_error(*(*command + i), "not a valid identifier", 3, term);
 		}
 		i++;
 	}

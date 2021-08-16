@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 16:40:05 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 18:41:29 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,4 +98,5 @@ void		ft_env(t_terminal *term, int flag, char ***command);					//env.c
 void		update_variable_env(t_terminal *term, char *path_com, char *last_arg);	//env.c
 int			pre_pars(t_terminal *term, char ****command_pipe);						//pars.c
 int			count_symbol_str(const char *str, char c);								//minishell.c
+void		print_error(char *msg, char *error, int flag, t_terminal *term);		//errors.c
 #endif

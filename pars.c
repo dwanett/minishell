@@ -3,54 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   pars.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/12 18:35:56 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 16:47:23 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-/*
-int	ligic_cavichki(char *command) //Проверка правильности расстановки кавычек
-{
-	int ferst_pos;
-	int last_pos;
-	char c;
-	int i;
 
-	i = 0;
-	while (command[i] != '\0')
-	{
-		ferst_pos = -1;
-		last_pos = -1;
-		if (command[i] == '\'' || command[i] == '"')
-		{
-			if (command[i] == '\'')
-				c = '\'';
-			else
-				c = '"';
-			ferst_pos = i;
-		}
-		if (ferst_pos != -1)
-		{
-			while (command[i] != '\0')
-			{
-				i++;
-				if (command[i] == c)
-				{
-					last_pos = i;
-					break;
-				}
-			}
-		}
-		if (ferst_pos != -1 && last_pos == -1)
-			return (1);
-		i++;
-	}
-	return (0);
-}
-*/
 int	logic_quotes(char *command, int *i, char a, int *size)
 {
 	if (a == ' ')
@@ -227,10 +188,14 @@ int	pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i)
 		return (1);
 	}
 	(*command_pipe)[i] = (char **)malloc(sizeof(char **) * (size + 1));
+	if ((*command_pipe)[i] == NULL)
+		print_error(NULL, strerror(errno), 0, term);
 	(*command_pipe)[i][size] = NULL;
 	while (size != 0)
 	{
 		(*command_pipe)[i][count] = (char *)malloc(count_char(*command, count) + 1);
+		if ((*command_pipe)[i][count] == NULL)
+			print_error(NULL, strerror(errno), 0, term);
 		char_record(&((*command_pipe)[i][count]), count, *command);
 		size--;
 		count++;
@@ -238,71 +203,8 @@ int	pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i)
 	return (0);
 }
 
-/*
-int		pars_cavichki(char **command, t_terminal *term) // Удаление кавычек из строки
-{
-	int i;
-	int j;
-	char *tmp;
-	int size;
-	int count_one;
-	int count_two;
-	int flag;
-
-	i = 0;
-	j = 0;
-	if (ligic_cavichki(*command)) //А ты точно не хуету ввел?
-	{
-		ft_putstr_fd(*command, term->fd.error);
-		ft_putstr_fd(": ", term->fd.error);
-		ft_putstr_fd("error syntax", term->fd.error);
-		ft_putstr_fd("\n", term->fd.error);
-		return (1);
-	}
-	count_one = count_symbol_str(*command, '\'');
-	count_two = count_symbol_str(*command, '"');
-	if (count_one % 2 != 0)
-		count_one--;
-	if (count_two % 2 != 0)
-		count_two--;
-	size = ft_strlen(*command) - count_one - count_two;
-	tmp = (char *)malloc(sizeof(char) * size + 1);
-	flag = 1;
-	count_one = 0;
-	count_two = 0;
-	while ((*command)[i] != '\0')
-	{
-		if ((*command)[i] == '"' && count_one == 0)
-		{
-			if (count_two != 1)
-				count_two++;
-			else
-				count_two = 0;
-			flag = 2;
-		}
-		if ((*command)[i] == '\'' && count_two == 0)
-		{
-			if (count_one != 1)
-				count_one++;
-			else
-				count_one = 0;
-			flag = 1;
-		}
-		if (!(flag == 1 && (*command)[i] == '\'') && !(flag == 2 && (*command)[i] == '"'))
-		{
-			tmp[j] = (*command)[i];
-			j++;
-		}
-		i++;
-	} // Копи кавычек завершено
-	tmp[j] = '\0';
-	free(*command);
-	*command = tmp;
-	return (0);
-}
-*/
-
-int ft_size_matrix_and_trim(char **matrix, char *c) // Обрезка пробелов в строке и подсчет команд между пайпами
+// Обрезка пробелов в строке и подсчет команд между пайпами
+int ft_size_matrix_and_trim(char **matrix, char *c)
 {
 	int i;
 	char *tmp;
@@ -321,7 +223,8 @@ int ft_size_matrix_and_trim(char **matrix, char *c) // Обрезка пробе
 	return (i);
 }
 
-char *serch_env(char *name, t_terminal *term, int *i) // Поиск глобальных переменных
+// Поиск глобальных переменных
+char	*serch_env(char *name, t_terminal *term, int *i)
 {
 	t_list_env *tmp;
 	int j;
@@ -390,7 +293,7 @@ void pars_env_elem(t_terminal *term, char **command_cur) // Замена гло�
 	}
 }
 
-char *get_name_file_and_fd(char *start_name_file, int *fd, char *tmp, int *i)
+char *get_name_file_and_fd(t_terminal *term, char *start_name_file, char *tmp, int *i)
 {
 	int j;
 	int size_name;
@@ -405,7 +308,7 @@ char *get_name_file_and_fd(char *start_name_file, int *fd, char *tmp, int *i)
 	}
 	name = (char*)malloc(sizeof(char) * (size_name + 1));
 	if (name == NULL)
-		return (NULL);
+		print_error(NULL, strerror(errno), 0, term);
 	while (j != size_name)
 	{
 		name[j] = start_name_file[j];
@@ -446,7 +349,7 @@ int is_input_or_output(t_terminal *term, char *tmp, int *i)
 		(*i)++;
 	}
 	start_name_file = tmp + *i;
-	name = get_name_file_and_fd(start_name_file, fd, tmp, i);
+	name = get_name_file_and_fd(term, start_name_file, tmp, i);
 	if (name != NULL)
 	{
 		if (c == '>')
@@ -540,6 +443,8 @@ int pre_pars(t_terminal *term, char ****command_pipe) // Главная функ
 	tmp = ft_split(term->line, '|');
 	size = ft_size_matrix_and_trim(tmp, " ");
 	*command_pipe = (char ***)malloc(sizeof(char **) * (size + 1));
+	if (*command_pipe == NULL)
+		print_error(NULL, strerror(errno), 0, term);
 	while (i != size)
 	{
 		if (par_std_out(term, &tmp[i]))//определение потока вывода если он первый

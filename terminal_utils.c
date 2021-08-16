@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   terminal_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/31 15:26:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/13 19:38:56 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 15:39:08 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void free_history(t_terminal *term)
+void	free_history(t_terminal *term)
 {
 	if (term->history_cmd == NULL)
-		return;
+		return ;
 	while (term->history_cmd->next != NULL)
 	{
 		term->history_cmd = term->history_cmd->next;
@@ -26,9 +26,9 @@ void free_history(t_terminal *term)
 	free(term->history_cmd);
 }
 
-void free_env(t_list_env *env)
+void	free_env(t_list_env *env)
 {
-	t_list_env *tmp;
+	t_list_env	*tmp;
 
 	while (env != NULL)
 	{
@@ -42,13 +42,13 @@ void free_env(t_list_env *env)
 	}
 }
 
-void ft_exit_utils(t_terminal *term)
+void	ft_exit_utils(t_terminal *term)
 {
 	int	i;
 
 	i = 0;
 	while (term->line != NULL && (term->line)[i] == ' ')
-				i++;
+		i++;
 	while (term->line != NULL && (term->line)[i] != '\0')
 	{
 		if ((term->line)[i] == ' ')
@@ -70,9 +70,11 @@ void ft_exit_utils(t_terminal *term)
 	}
 }
 
-void ft_exit(t_terminal *term) // выход из терминала и сохранение истории
+// выход из терминала и сохранение истории
+void	ft_exit(t_terminal *term)
 {
-	if (term->line && (term->history_cmd && ft_strcmp(term->line, term->history_cmd->command)))
+	if (term->line && (term->history_cmd
+			&& ft_strcmp(term->line, term->history_cmd->command)))
 		ft_add_history(term);
 	save_history(term);
 	free_env(term->env);
@@ -80,12 +82,11 @@ void ft_exit(t_terminal *term) // выход из терминала и сохр
 	ft_exit_utils(term);
 	if (term->line != NULL)
 		free(term->line);
-	//free_history(term);
-	//ft_putstr_fd("exit\n", 1);
 	exit(0);
 }
 
-void ft_print_n() // CTRL C
+// CTRL C
+void	ft_print_n(void)
 {
 	rl_on_new_line();
 	rl_redisplay();
