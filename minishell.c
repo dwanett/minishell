@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/13 19:05:14 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/16 16:53:48 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,13 @@ int	check_not_def_com(char *line, char **not_def_com) //Проверка ком�
 	return (-1);
 }
 
-int check_def_com(t_terminal *term, char *command, char **path) //Проверка /bin
+int	check_def_com(t_terminal *term, char *command, char **path) //Проверка /bin
 {
-	DIR *dir;
-	struct dirent *dp;
-	char **patch_env;
-	int i;
-	int j;
+	DIR				*dir;
+	struct dirent	*dp;
+	char			**patch_env;
+	int				i;
+	int				j;
 
 	i = 0;
 	j = 0;
@@ -43,26 +43,26 @@ int check_def_com(t_terminal *term, char *command, char **path) //Проверк
 	{
 		dir = opendir(patch_env[i]);
 		if (dir != NULL)// открываем каждую директорию и проверяем наличие команды
-        {
-            dp = readdir(dir);
-            while (dp != NULL)
-            {
-                if (!ft_strcmp(command, dp->d_name))
-                {
-                    closedir(dir);
-                    *path = ft_strdup(patch_env[i]);
-                    while (patch_env[j] != NULL)
-                    {
-                        free(patch_env[j]);
-                        j++;
-                    }
-                    free(patch_env);
-                    return (0);
-                }
-                dp = readdir(dir);
-            }
-            closedir(dir);
-        }
+		{
+			dp = readdir(dir);
+			while (dp != NULL)
+			{
+				if (!ft_strcmp(command, dp->d_name))
+				{
+					closedir(dir);
+					*path = ft_strdup(patch_env[i]);
+					while (patch_env[j] != NULL)
+					{
+						free(patch_env[j]);
+						j++;
+					}
+					free(patch_env);
+					return (0);
+				}
+				dp = readdir(dir);
+			}
+			closedir(dir);
+		}
 		i++;
 	}
 	if (patch_env)
@@ -77,10 +77,10 @@ int check_def_com(t_terminal *term, char *command, char **path) //Проверк
 	return (1);
 }
 
-int count_symbol_str(const char *str, char c)
+int	count_symbol_str(const char *str, char c)
 {
-	int i;
-	int count;
+	int	i;
+	int	count;
 
 	i = 0;
 	count = 0;
@@ -93,9 +93,9 @@ int count_symbol_str(const char *str, char c)
 	return (count);
 }
 
-int is_path(const char *command)//Это путь?
+int	is_path(const char *command)//Это путь?
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (command[i] != '\0')
@@ -107,7 +107,7 @@ int is_path(const char *command)//Это путь?
 	return (0);
 }
 
-int check_def_command(char ***command, t_terminal *term)
+int	check_def_command(char ***command, t_terminal *term)
 {
 	char *path;
 	char *tmp;
@@ -116,9 +116,7 @@ int check_def_command(char ***command, t_terminal *term)
 	{
 		if (check_def_com(term, **command, &path)) //это команда? (если есть файл в /bin - это команда)
 		{
-			ft_putstr_fd(*command[0], term->fd.error);
-			ft_putstr_fd(": command not found", term->fd.error);
-			ft_putstr_fd("\n", term->fd.error);
+			print_error(*command[0], "command not found", -1, term);
 			return (0);
 		}
 		tmp = ft_strjoin(path, "/");
@@ -150,13 +148,7 @@ void pars_def_command(char ***command, t_terminal *term) // Обработка �
 		l = execve(*command[0], *command, term->start_env);
 	}
 	if (l == -1)
-	{
-		ft_putstr_fd(*command[0], term->fd.error);
-		ft_putstr_fd(": ", term->fd.error);
-		ft_putstr_fd(strerror(errno), term->fd.error);
-		ft_putstr_fd("\n", term->fd.error);
-		exit(errno);
-	}
+		print_error(*command[0], strerror(errno), 0, term);
 	waitpid(pid, &status, 0);
 }
 
@@ -175,20 +167,16 @@ void ft_cd(char ***command, int i, t_terminal *term) // команда cd
 		ret = chdir(*(*command + 1));
 	if (ret == -1)
 	{
-		ft_putstr_fd("cd: ", term->fd.error);
-		ft_putstr_fd(*(*command + 1), term->fd.error);
-		ft_putstr_fd(": ", term->fd.error);
-		ft_putstr_fd(strerror(errno), term->fd.error);
-		ft_putstr_fd("\n", term->fd.error);
+		print_error(*(*command + 1), strerror(errno), 4, term);
 		return ;
 	}
 }
 
-void pars_not_def_command(char ***command, t_terminal *term, int i) // Обработка не дефолтных
+void	pars_not_def_command(char ***command, t_terminal *term, int i) // Обработка не дефолтных
 {
-	char **tmp;
-	int j;
-	int size_arg;
+	char	**tmp;
+	int		j;
+	int		size_arg;
 
 	j = 0;
 	size_arg = 0;
@@ -211,10 +199,10 @@ void pars_not_def_command(char ***command, t_terminal *term, int i) // Обра�
 		ft_env(term, 0, command);
 }
 
-int tmp_variable(char ***command, t_terminal *term)
+int		tmp_variable(char ***command, t_terminal *term)
 {
-	t_list_env *tmp;
-	int i;
+	t_list_env	*tmp;
+	int			i;
 
 	i = 0;
 	while ((*command)[i] != NULL)
@@ -227,6 +215,8 @@ int tmp_variable(char ***command, t_terminal *term)
 	while ((*command)[i] != NULL)
 	{
 		tmp = (t_list_env *)malloc(sizeof(t_list_env));
+		if (tmp == NULL)
+			print_error(NULL, strerror(errno), 0, term);
 		tmp->update_variable = NULL;
 		tmp->name = ft_strndup((*command)[i], ft_strclen((*command)[i], '='));
 		tmp->line = ft_strdup((*command)[i] + ft_strclen((*command)[i], '=') + 1);
@@ -240,17 +230,19 @@ int tmp_variable(char ***command, t_terminal *term)
 	return (0);
 }
 
-void get_info_str_command(t_info_command **command_cur, t_terminal *term, char ***command_pipe, int ret)
+void	get_info_str_command(t_info_command **command_cur, t_terminal *term, char ***command_pipe, int ret)
 {
-	t_info_command *last_elem;
-	t_info_command *tmp;
-	int i;
+	t_info_command	*last_elem;
+	t_info_command	*tmp;
+	int				i;
 
 	i = 0;
 	*command_cur = NULL;
 	while (command_pipe[i] != NULL)
 	{
 		tmp = (t_info_command*)malloc(sizeof(t_info_command));
+		if (tmp == NULL)
+			print_error(NULL, strerror(errno), 0, term);
 		tmp->is_def_command = 0;
 		tmp->command = command_pipe[i];
 		if (ret && *(tmp->command) != NULL)
@@ -274,13 +266,13 @@ void get_info_str_command(t_info_command **command_cur, t_terminal *term, char *
 	}
 }
 
-void command(t_terminal *term)
+void	command(t_terminal *term)
 {
-	char ***command_pipe;
-	t_info_command *command_cur;
-	t_info_command *tmp;
-	int j;
-	int ret;
+	char			***command_pipe;
+	t_info_command	*command_cur;
+	t_info_command	*tmp;
+	int				j;
+	int				ret;
 
 	ret = pre_pars(term, &command_pipe);
 	get_info_str_command(&command_cur, term, command_pipe, ret);
@@ -311,7 +303,7 @@ void command(t_terminal *term)
 	free(command_pipe);
 }
 
-void init_term_fd(t_terminal *term) //инициализация потоков
+void	init_term_fd(t_terminal *term) //инициализация потоков
 {
 	if (term->fd.in != STDIN)
 	{
@@ -330,7 +322,7 @@ void init_term_fd(t_terminal *term) //инициализация потоков
 	}
 }
 
-void teminal(t_terminal *term) //чтение строк терминала
+void	teminal(t_terminal *term) //чтение строк терминала
 {
 	init_term_fd(term); //переинициализация потоков
 	if (term->line != NULL)
@@ -360,10 +352,10 @@ void teminal(t_terminal *term) //чтение строк терминала
 	}
 }
 
-void init_env(t_list_env **env, char **envp, t_terminal *term)
+void	init_env(t_list_env **env, char **envp, t_terminal *term)
 {
-	t_list_env *tmp;
-	int i;
+	t_list_env	*tmp;
+	int			i;
 
 	i = 0;
 	while (envp[i] != NULL)
@@ -374,10 +366,7 @@ void init_env(t_list_env **env, char **envp, t_terminal *term)
 	{
 		tmp = (t_list_env*)malloc(sizeof(t_list_env));
 		if (tmp == NULL)
-		{
-			ft_putstr_fd(strerror(errno), 2);
-			exit(errno);
-		}
+			print_error(NULL, strerror(errno), 0, term);
 		tmp->name = ft_strndup(envp[i], ft_strclen(envp[i], '='));
 		tmp->line = ft_strdup(envp[i] + ft_strclen(envp[i], '=') + 1);
 		tmp->update_variable = NULL;
@@ -407,6 +396,8 @@ void init_env_for_next_process(t_terminal *term, char **envp)
 	while (envp[size_env] != NULL)
 		size_env++;
 	term->start_env = (char **)malloc(sizeof(char*) * (size_env + 1));
+	if (term->start_env == NULL)
+		print_error(NULL, strerror(errno), 0, term);
 	while (j != size_env)
 	{
 		if (ft_strncmp(envp[j], "SHLVL", 5))
