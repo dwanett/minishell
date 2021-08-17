@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   terminal_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/31 15:26:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 15:39:08 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 18:43:40 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,8 +86,9 @@ void	ft_exit(t_terminal *term)
 }
 
 // CTRL C
-void	ft_print_n(void)
+void	ft_print_n(int a)
 {
+	(void)a;
 	rl_on_new_line();
 	rl_redisplay();
 	tputs(cursor_right, 1, ft_putchar);

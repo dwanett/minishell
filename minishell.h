@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 18:28:34 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 18:46:09 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,10 +121,10 @@ typedef struct s_terminal
 	char			**start_env;
 }			t_terminal;
 
-void		rl_replace_line (const char *, int);
+void		rl_replace_line(const char *lol, int kek);
 void		free_history(t_terminal *term);					//terminal_utils.c
 void		ft_exit(t_terminal *term);						//terminal_utils.c
-void		ft_print_n();									//terminal_utils.c
+void		ft_print_n(int a);								//terminal_utils.c
 void		ft_add_history(t_terminal *term);				//terminal_history.c
 void		read_file_history(t_terminal *term);			//terminal_history.c
 void		save_history(t_terminal *term);					//terminal_history.c
@@ -134,28 +134,28 @@ void		ft_env(t_terminal *term, int flag, char ***command);		//env.c
 void		update_variable_env(t_terminal *term, char *path_com,
 				char *last_arg, t_list_env *tmp);						//env.c
 int			pre_pars(t_terminal *term, char ****command_pipe,
-				t_info_command **command_cur, int i);							//pars.c
+				t_info_command **command_cur, int i);
 int			par_std_out(t_terminal *term, char **tmp,
-				t_info_command **command_cur, t_info_command **last_elem);//pars.c
-int			count_symbol_str(const char *str, char c);						//minishell.c
-void		print_error(char *msg, char *error, int flag, t_terminal *term);//errors.c
-int			check_not_def_com(char *line, char **not_def_com);//check_command.c
-int			check_def_com(t_terminal *term, char *command, char **path);//check_command.c
+				t_info_command **command_cur, t_info_command **last_elem);
+int			count_symbol_str(const char *str, char c);
+void		print_error(char *msg, char *error, int flag, t_terminal *term);
+int			check_not_def_com(char *line, char **not_def_com);
+int			check_def_com(t_terminal *term, char *command, char **path);
 void		init_t_teminal(t_terminal *term,
-				int argc, char **argv, char **envp);					//init.c
-int			init_term_fd(t_terminal *term);								//init.c
+				int argc, char **argv, char **envp);
+int			init_term_fd(t_terminal *term);
 void		get_info_str_command(t_info_command **command_cur,
-				t_terminal *term, char ***command_pipe, int ret);//get_info_str.c
-int			check_def_command(char ***command, t_terminal *term);//def_command.c
+				t_terminal *term, char ***command_pipe, int ret);
+int			check_def_command(char ***command, t_terminal *term);
 void		pars_command(t_terminal *term,
 				t_info_command **command_cur, int ret);
-void		ft_export(char ***command, t_terminal *term, int size_arg); // export.c
-int			is_name(char *elem, int flag);	//unset.c
-void		del_element_env(char *elem, t_terminal *term);//unset.c
-void		ft_unset(char ***command, t_terminal *term, int size_arg); //unset.c
+void		ft_export(char ***command, t_terminal *term, int size_arg);
+int			is_name(char *elem, int flag);
+void		del_element_env(char *elem, t_terminal *term);
+void		ft_unset(char ***command, t_terminal *term, int size_arg);
 void		par_multi_cammand(t_terminal *term);
-int			is_ravenstvo(char *peremen);//ustils_export.c
-int			is_new_perem_export(char *peremen, t_list_env *env);//ustils_export.c
+int			is_ravenstvo(char *peremen);
+int			is_new_perem_export(char *peremen, t_list_env *env);
 int			ft_size_matrix_and_trim(char **matrix,
 				char *c, t_terminal *term, char ****command_pipe);
 void		is_input_or_output_init(t_input_or_output *all,
@@ -164,7 +164,8 @@ void		command_pipe_null(char ****command_pipe, int i, int *ret);
 void		pars_env_elem(t_terminal *term, char **command_cur);
 char		*get_name_file_and_fd(t_terminal *term,
 				char *start_name_file, char *tmp, int *i);
-int			pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i);
+int			pars_quotes(char **command, t_terminal *term,
+				char ****command_pipe, int i);
 int			all_name_null(t_terminal *term, t_input_or_output *all);
 void		count_bad(char *command, int *i);
 int			ligic_quost_two(char *command);
