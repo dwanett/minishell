@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pars.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 21:02:12 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 14:59:18 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,7 +266,7 @@ void pars_env_elem(t_terminal *term, char **command_cur) // Замена гло�
 	open_two = 0;
 	while (((*command_cur))[i] != '\0')
 	{
-	    if (((*command_cur))[i] == '$' && open_one == 0 && (ft_isalpha(((*command_cur))[i + 1]) || ((*command_cur))[i + 1] == '_'))
+	    if (((*command_cur))[i] == '$' && open_one == 0 && (ft_isalpha(((*command_cur))[i + 1]) || ((*command_cur))[i + 1] == '_' || ((*command_cur))[i + 1] == '?'))
 		{
 			tmp = ft_strndup(*command_cur, i);
 			tmp_2 = *command_cur;
@@ -404,7 +404,7 @@ int par_std_out(t_terminal *term, char **tmp, t_info_command **command_cur, t_in
 				return (1);
 			end = i;
 			while ((*tmp)[end] == ' ')
-			    end++;
+				end++;
 			if (new_tmp != NULL)
 				free(new_tmp);
 			new_tmp = ft_strndup(*tmp, start);
@@ -413,6 +413,7 @@ int par_std_out(t_terminal *term, char **tmp, t_info_command **command_cur, t_in
 			free(fre);
 			free((*tmp));
 			(*tmp) = ft_strdup(new_tmp);
+			free(new_tmp);
 			i = 0;
 		}
 		i++;
@@ -424,7 +425,7 @@ int par_std_out(t_terminal *term, char **tmp, t_info_command **command_cur, t_in
 	term->fd.in = STDIN;
 	term->fd.out = STDOUT;
 	term->fd.error = STDERROR;
-	if ((*command_cur)  == NULL)
+	if ((*command_cur) == NULL)
 	{
 		(*command_cur) = tmp_com;
 		(*last_elem) = (*command_cur);
@@ -433,7 +434,6 @@ int par_std_out(t_terminal *term, char **tmp, t_info_command **command_cur, t_in
 	{
 		(*last_elem)->next = tmp_com;
 		(*last_elem) = (*last_elem)->next;
-
 	}
 	return (0);
 }

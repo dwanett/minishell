@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   errors.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/16 16:02:56 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 16:53:37 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 14:57:47 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,4 +32,9 @@ void print_error(char *msg, char *error, int flag, t_terminal *term)
 	ft_putstr_fd(": ", term->fd.error);
 	ft_putstr_fd(error, term->fd.error);
 	ft_putstr_fd("\n", term->fd.error);
+	free(term->status->line);
+	if (flag == 1 || flag == 2 || flag == 3 || flag == 4)
+		term->status->line = ft_strdup("1");
+	else
+		term->status->line = ft_strdup("127");
 }

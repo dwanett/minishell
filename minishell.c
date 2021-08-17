@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 22:24:26 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 15:04:55 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,12 +155,19 @@ void	pars_def_command(char ***command, t_terminal *term)
 	if (l == -1)
 		print_error(*command[0], strerror(errno), 0, term);
 	waitpid(pid, &status, 0);
+	free(term->status->line);
+	if (status == 0)
+		term->status->line = ft_strdup("0");
+	else
+		term->status->line = ft_strdup("1");
 }
 
 void ft_cd(char ***command, int i, t_terminal *term) // команда cd
 {
 	int	ret;
 
+	free(term->status->line);
+	term->status->line = ft_strdup("0");
 	if (i >= 3)
 	{
 		ft_putstr_fd("cd: too many arguments\n", term->fd.error);
@@ -275,8 +282,6 @@ void get_info_str_command(t_info_command **command_cur,
 		pipe(fd);
 		if (tmp->fd.out == STDOUT)
 		{
-			//if (i == 0)
-				//tmp->fd.in = term->fd.in;
 			if (command_pipe[i + 1] == NULL)
 				tmp->fd.out = STDOUT;
 			else
@@ -286,62 +291,17 @@ void get_info_str_command(t_info_command **command_cur,
 		{
 			write(fd[1], "\0", 1);
 			close(fd[1]);
-			//tmp->fd.in = fd[0];
 		}
-		//pipe_command(term, &tmp, command_pipe);
-		//if (tmp->fd.in != term->fd.in && tmp->fd.out != term->fd.out)
-		//{
-		//	if (term->fd.out == STDOUT)
-		//	{
-		//		pipe(fd);
-		//		tmp->fd.in = term->fd.in;
-		//		tmp->fd.out = fd[1];
-		//		tmp->fd.error = term->fd.error;
-		//		tmp->fd.history = term->fd.history;
-		//	}
-		//	else
-		//	{
-		//		pipe(fd);
-		//		tmp->fd.in = term->fd.in;
-		//		tmp->fd.out = term->fd.out;
-		//		tmp->fd.error = term->fd.error;
-		//		tmp->fd.history = term->fd.history;
-		//	}
-		//}
 		tmp->is_def_command = 0;
 		tmp->command = command_pipe[i];
 		if (ret && *(tmp->command) != NULL)
 		{
 			tmp->number_command = check_not_def_com(*(tmp->command),
-					term->not_def_command); // возможно эти команды надо делать отдельным процессом, но хз
+					term->not_def_command);
 			if (tmp->number_command == -1
-				&& tmp_variable(&(tmp->command), term, 0))												// проверка команд (они не дефолтные?)
-				tmp->is_def_command = check_def_command(&(tmp->command), term);				// Они не дефолтные! И есть в папке /bin. Или это не команды.
+				&& tmp_variable(&(tmp->command), term, 0))
+				tmp->is_def_command = check_def_command(&(tmp->command), term);
 		}
-		//if (i == 0)
-		//{
-		//	(*command_cur) = tmp;
-		//	last_elem = (*command_cur);
-		//}
-		//else
-		//{
-		//	tmp->fd.in = fd[0];
-		//	if (i == 1 && term->fd.out != STDOUT)
-		//	{
-		//		write(fd[1], "\0", 1);
-		//		close(fd[1]);
-		//	}
-		//	if (command_pipe[i + 1] == NULL)
-		//		tmp->fd.out = STDOUT;
-		//	else
-		//	{
-		//		pipe(fd);
-		//		//tmp->fd.in = fd[1];
-		//		tmp->fd.out = fd[1];
-		//	}
-		//	tmp->fd.error = term->fd.error;
-		//	tmp->fd.history = term->fd.history;
-		//}
 		tmp = tmp->next;
 		i++;
 	}
@@ -371,7 +331,12 @@ void	command(t_terminal *term)
 			else
 				pars_def_command(&(command_cur->command), term);// обработка дефолтных команд
 		}
-		while (command_cur->command[j] != NULL)
+		else
+		{
+			free(term->status->line);
+			term->status->line = ft_strdup("127");
+		}
+		while (command_cur->command != NULL && command_cur->command[j] != NULL)
 		{
 			if (command_cur->command[j + 1] == NULL
 				&& term->flag.export != 2 && term->flag.def_com == 0)
@@ -468,6 +433,16 @@ void	init_env(t_list_env **env, char **envp, t_terminal *term, int i)
 		tmp->next = *env;
 		*env = tmp;
 	}
+	tmp = (t_list_env *)malloc(sizeof(t_list_env));
+	if (tmp == NULL)
+		print_error(NULL, strerror(errno), 0, term);
+	tmp->name = ft_strdup("?");
+	tmp->line = ft_strdup("0");
+	tmp->update_variable = NULL;
+	tmp->tmp_variable = 1;
+	tmp->next = *env;
+	*env = tmp;
+	term->status = tmp;
 }
 
 void init_env_for_next_process(t_terminal *term, char **envp, int j)

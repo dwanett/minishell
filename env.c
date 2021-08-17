@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/02 15:28:39 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 21:54:09 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 14:50:24 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,8 @@ void	ft_env(t_terminal *term, int flag, char ***command)
 
 	tmp = term->env;
 	i = 1;
+	free(term->status->line);
+	term->status->line = ft_strdup("0");
 	check_error = NULL;
 	update_variable_env(term, "/usr/bin/env", "env", NULL);
 	if (command != NULL)
@@ -183,6 +185,8 @@ void	ft_unset(char ***command, t_terminal *term, int size_arg)
 	int	i;
 
 	i = 1;
+	free(term->status->line);
+	term->status->line = ft_strdup("0");
 	while (i != size_arg)
 	{
 		if (!is_name(*(*command + i), 0))
@@ -250,6 +254,8 @@ void	ft_export(char ***command, t_terminal *term, int size_arg)
 
 	i = 1;
 	tmp = term->env;
+	free(term->status->line);
+	term->status->line = ft_strdup("0");
 	if (!*(*command + 1))
 	{
 		ft_env(term, 1, NULL);

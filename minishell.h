@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/16 22:24:11 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 14:37:26 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ typedef struct s_terminal
 	t_fd			fd;
 	char			*not_def_command[4];
 	t_list_env		*update;
+	t_list_env		*status;
 	t_list_env		*path;
 	t_flags			flag;
 	char			**start_env;
