@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pars_command.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/17 17:12:38 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 17:14:18 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 19:28:03 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,33 +36,33 @@ void	ft_cd(char ***command, int i, t_terminal *term)
 
 void	pars_def_command(char ***command, t_terminal *term)
 {
-	pid_t	pid;
-	int		l;
-	int		status;
+	t_pars_def_command	all;
 
-	l = 0;
+	all.l = 0;
 	update_variable_env(term, *command[0],
 		ft_strrchr(*command[0], '/') + 1, NULL);
 	term->flag.def_com = 1;
-	pid = fork();
-	if (pid == 0)
+	all.pid = fork();
+	if (all.pid == 0)
 	{
 		dup2(term->fd.in, 0);
 		dup2(term->fd.out, 1);
 		dup2(term->fd.error, 2);
-		l = execve(*command[0], *command, term->start_env);
+		all.l = execve(*command[0], *command, term->start_env);
 	}
-	if (l == -1)
+	if (all.l == -1)
+	{
 		print_error(*command[0], strerror(errno), -1, term);
-	waitpid(pid, &status, 0);
+		exit(-1);
+	}
+	waitpid(all.pid, &(all.status), 0);
 	free(term->status->line);
-	if (status == 0)
+	if (all.status == 0)
 		term->status->line = ft_strdup("0");
 	else
 		term->status->line = ft_strdup("1");
 }
 
-// Обработка не дефолтных
 void	pars_not_def_command(char ***command, t_terminal *term, int i)
 {
 	char	**tmp;

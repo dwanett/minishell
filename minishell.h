@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 18:46:09 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 19:26:48 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,12 @@ typedef struct s_char_record
 	int	j;
 	int	g;
 }				t_char_record;
+typedef struct s_pars_def_command
+{
+	pid_t	pid;
+	int		l;
+	int		status;
+}				t_pars_def_command;
 
 typedef struct s_terminal
 {
