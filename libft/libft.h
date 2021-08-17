@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/28 13:48:00 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/12 21:21:44 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 18:05:15 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,8 @@ char				*ft_strrchr(const char *s, int c);
 const char			*ft_strnstr(const char *haystack,
 						const char *needle, size_t len);
 int					ft_strncmp(const char *s1, const char *s2, size_t n);
-int					ft_strnccmp(const char *s1, const char *s2, char a, size_t n);
+int					ft_strnccmp(const char *s1,
+						const char *s2, char a, size_t n);
 int					ft_strcmp(const char *s1, const char *s2);
 int					ft_atoi(const char *str);
 int					ft_isalpha(int c);

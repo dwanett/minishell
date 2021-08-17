@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/20 09:56:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/10 20:17:33 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 18:03:53 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ char	*ft_strdup_quotes(const char *src)
 	i = 0;
 	while (src[j] != '\0')
 	{
-		if (src[j] =='\'')
+		if (src[j] == '\'')
 			i += 4;
 		j++;
 	}

@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 17:54:21 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 18:28:34 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,6 +153,19 @@ void		ft_export(char ***command, t_terminal *term, int size_arg); // export.c
 int			is_name(char *elem, int flag);	//unset.c
 void		del_element_env(char *elem, t_terminal *term);//unset.c
 void		ft_unset(char ***command, t_terminal *term, int size_arg); //unset.c
+void		par_multi_cammand(t_terminal *term);
 int			is_ravenstvo(char *peremen);//ustils_export.c
 int			is_new_perem_export(char *peremen, t_list_env *env);//ustils_export.c
+int			ft_size_matrix_and_trim(char **matrix,
+				char *c, t_terminal *term, char ****command_pipe);
+void		is_input_or_output_init(t_input_or_output *all,
+				t_terminal *term, char *tmp, int *i);
+void		command_pipe_null(char ****command_pipe, int i, int *ret);
+void		pars_env_elem(t_terminal *term, char **command_cur);
+char		*get_name_file_and_fd(t_terminal *term,
+				char *start_name_file, char *tmp, int *i);
+int			pars_quotes(char **command, t_terminal *term, char ****command_pipe, int i);
+int			all_name_null(t_terminal *term, t_input_or_output *all);
+void		count_bad(char *command, int *i);
+int			ligic_quost_two(char *command);
 #endif

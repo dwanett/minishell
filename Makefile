@@ -19,7 +19,11 @@ SRC =	minishell.c\
 		pars_command.c\
 		export.c\
 		unset.c\
-		utils_export.c
+		utils_export.c\
+		pars_multi_command.c\
+		pars_quotes.c\
+		pars_utils.c\
+		help_pars_quotes.c
 
 SRCS = $(SRC)
 
