@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 17:15:22 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 17:53:29 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	command(t_terminal *term)
 	int				j;
 	int				ret;
 
-	ret = pre_pars(term, &command_pipe, &command_cur);
+	ret = pre_pars(term, &command_pipe, &command_cur, -1);
 	get_info_str_command(&command_cur, term, command_pipe, ret);
 	while (command_cur != NULL)
 	{

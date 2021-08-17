@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 17:43:30 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 17:54:21 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,41 @@ typedef struct s_info_command
 	struct s_info_command	*next;
 }				t_info_command;
 
+typedef struct s_start_end
+{
+	int				i;
+	int				start;
+	int				end;
+	char			*new_tmp;
+	char			*fre;
+}				t_start_end;
+
+typedef struct s_input_or_output
+{
+	int		count;
+	char	*start_name_file;
+	char	*name;
+	int		*fd;
+	char	c;
+}				t_input_or_output;
+
+typedef struct s_pars_env_elem
+{
+	int		i;
+	char	*tmp;
+	char	*tmp_2;
+	int		open_one;
+	int		open_two;
+	int		size_name;
+}				t_pars_env_elem;
+
+typedef struct s_char_record
+{
+	int	i;
+	int	j;
+	int	g;
+}				t_char_record;
+
 typedef struct s_terminal
 {
 	char			*line;
@@ -99,7 +134,7 @@ void		ft_env(t_terminal *term, int flag, char ***command);		//env.c
 void		update_variable_env(t_terminal *term, char *path_com,
 				char *last_arg, t_list_env *tmp);						//env.c
 int			pre_pars(t_terminal *term, char ****command_pipe,
-				t_info_command **command_cur);							//pars.c
+				t_info_command **command_cur, int i);							//pars.c
 int			par_std_out(t_terminal *term, char **tmp,
 				t_info_command **command_cur, t_info_command **last_elem);//pars.c
 int			count_symbol_str(const char *str, char c);						//minishell.c
