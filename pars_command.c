@@ -53,7 +53,7 @@ void	pars_def_command(char ***command, t_terminal *term)
 		l = execve(*command[0], *command, term->start_env);
 	}
 	if (l == -1)
-		print_error(*command[0], strerror(errno), 0, term);
+		print_error(*command[0], strerror(errno), -1, term);
 	waitpid(pid, &status, 0);
 	free(term->status->line);
 	if (status == 0)

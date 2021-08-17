@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   errors.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/16 16:02:56 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 17:16:27 by dwanetta         ###   ########.fr       */
+/*   Updated: 2021/08/17 18:59:50 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ void	print_error(char *msg, char *error, int flag, t_terminal *term)
 	{
 		ft_putstr_fd("FATAL ERROR\n", 2);
 		ft_putstr_fd(error, 2);
+		ft_putstr_fd("\n", 2);
 		exit(errno);
 	}
 	if (flag == 1)
