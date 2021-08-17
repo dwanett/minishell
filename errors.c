@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   errors.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/16 16:02:56 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 14:57:47 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 17:16:27 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-void print_error(char *msg, char *error, int flag, t_terminal *term)
+void	print_error(char *msg, char *error, int flag, t_terminal *term)
 {
 	if (flag == 0)
 	{

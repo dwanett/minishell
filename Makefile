@@ -11,7 +11,15 @@ SRC =	minishell.c\
 		terminal_history.c\
 		env.c\
 		pars.c\
-		errors.c
+		errors.c\
+		check_command.c\
+		init.c\
+		get_info_str.c\
+		def_command.c\
+		pars_command.c\
+		export.c\
+		unset.c\
+		utils_export.c
 
 SRCS = $(SRC)
 

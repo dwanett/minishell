@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dwanetta <dwanetta@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/02 15:28:39 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 14:50:24 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/17 17:36:04 by dwanetta         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,17 +90,23 @@ void	ft_env_help(t_list_env *tmp, t_terminal *term, int flag)
 	}
 }
 
+void	ft_env_init(t_list_env **tmp,
+	t_terminal *term, char **check_error, int *i)
+{
+	*tmp = term->env;
+	*i = 1;
+	free(term->status->line);
+	term->status->line = ft_strdup("0");
+	*check_error = NULL;
+}
+
 void	ft_env(t_terminal *term, int flag, char ***command)
 {
 	t_list_env	*tmp;
 	char		*check_error;
 	int			i;
 
-	tmp = term->env;
-	i = 1;
-	free(term->status->line);
-	term->status->line = ft_strdup("0");
-	check_error = NULL;
+	ft_env_init(&tmp, term, &check_error, &i);
 	update_variable_env(term, "/usr/bin/env", "env", NULL);
 	if (command != NULL)
 		check_error = is_valid_env_arg((*command));
@@ -119,167 +125,4 @@ void	ft_env(t_terminal *term, int flag, char ***command)
 	}
 	else if (errno != 0)
 		print_error(check_error, strerror(errno), 1, term);
-}
-
-void	del_element_env_help(t_terminal *term,
-		t_list_env **tmp, t_list_env **prev)
-{
-	(*prev)->next = (*tmp)->next;
-	if (!ft_strcmp((*tmp)->name, "PATH"))
-		term->path = NULL;
-	free((*tmp)->name);
-	free((*tmp)->line);
-	if ((*tmp)->update_variable != NULL)
-	{
-		free((*tmp)->update_variable);
-		free(term->update);
-		term->update = NULL;
-	}
-	else
-		free((*tmp));
-	(*tmp) = (*prev);
-}
-
-//Удаление переменной
-void	del_element_env(char *elem, t_terminal *term)
-{
-	t_list_env	*tmp;
-	t_list_env	*prev;
-
-	tmp = term->env;
-	prev = tmp;
-	while (tmp != NULL)
-	{
-		if (!ft_strncmp(tmp->name, elem, ft_strclen(elem, '=')))
-		{
-			if (prev == term->env)
-				term->env = term->env->next;
-			else
-				del_element_env_help(term, &tmp, &prev);
-			break ;
-		}
-		prev = tmp;
-		tmp = tmp->next;
-	}
-}
-
-int	is_name(char *elem, int flag)
-{
-	int	i;
-
-	i = 0;
-	while (elem[i] != '\0')
-	{
-		if (flag == 1 && elem[i] == '=' && i != 0)
-			break ;
-		if (!ft_isalpha(elem[i]) && elem[i] != '_')
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
-// не всегда удаляет переменную (причина неизвестна)
-void	ft_unset(char ***command, t_terminal *term, int size_arg)
-{
-	int	i;
-
-	i = 1;
-	free(term->status->line);
-	term->status->line = ft_strdup("0");
-	while (i != size_arg)
-	{
-		if (!is_name(*(*command + i), 0))
-			del_element_env(*(*command + i), term);
-		else
-			print_error(*(*command + i), "not a valid identifier", 2, term);
-		i++;
-	}
-}
-
-//Проверка на дубликат переменной
-int	is_new_perem_export(char *peremen, t_list_env *env)
-{
-	t_list_env	*tmp;
-
-	tmp = env;
-	while (tmp != NULL)
-	{
-		if (!ft_strncmp(tmp->name, peremen, ft_strclen(peremen, '=')))
-			return (1);
-		tmp = tmp->next;
-	}
-	return (0);
-}
-
-//проверка на символ =
-int	is_ravenstvo(char *peremen)
-{
-	int	i;
-	int	j;
-
-	i = 0;
-	j = 0;
-	while (peremen[i] != '\0')
-	{
-		if (peremen[i] == '=')
-			j = 1;
-		i++;
-	}
-	return (j);
-}
-
-void	ft_export_help(char ***command, t_terminal *term, t_list_env **new_env, int i)
-{
-	while (term->env && term->env->next != NULL)
-		term->env = term->env->next;
-	(*new_env) = (t_list_env *)malloc(sizeof(t_list_env));
-	if ((*new_env) == NULL)
-		print_error(NULL, strerror(errno), 0, term);
-	(*new_env)->name = ft_strndup(*(*command + i),
-			 ft_strclen(*(*command + i), '='));
-	if (!ft_strcmp((*new_env)->name, "PATH"))
-		term->path = (*new_env);
-	(*new_env)->line = ft_strdup(*(*command + i)
-			+ ft_strclen(*(*command + i), '=') + 1);
-	update_variable_env(term, NULL, (*new_env)->name, NULL);
-	(*new_env)->next = NULL;
-}
-
-void	ft_export(char ***command, t_terminal *term, int size_arg)
-{
-	t_list_env	*new_env;
-	t_list_env	*tmp;
-	int			i;
-
-	i = 1;
-	tmp = term->env;
-	free(term->status->line);
-	term->status->line = ft_strdup("0");
-	if (!*(*command + 1))
-	{
-		ft_env(term, 1, NULL);
-		return ;
-	}
-	while (i != size_arg)
-	{
-		term->env = tmp;
-		if (is_ravenstvo(*(*command + i)))
-		{
-			if (!is_name(*(*command + i), 1) && term->flag.export != 1)
-			{
-				if (is_new_perem_export(*(*command + i), tmp))
-					del_element_env(*(*command + i), term);
-				ft_export_help(command, term, &new_env, i);
-				if (term->env)
-					term->env->next = new_env;
-				else
-					tmp = new_env;
-			}
-			else
-				print_error(*(*command + i), "not a valid identifier", 3, term);
-		}
-		i++;
-	}
-	term->env = tmp;
 }
