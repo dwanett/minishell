@@ -239,7 +239,7 @@ char	*serch_env(char *name, t_terminal *term, int *i)
 			if (!ft_strcmp(tmp->name, "_"))
 			{
 				if (term->update == NULL)
-					update_variable_env(term, NULL, "_");
+					update_variable_env(term, NULL, "_", NULL);
 				return (term->update->update_variable);
 			}
 			return (tmp->line);
@@ -421,6 +421,9 @@ int par_std_out(t_terminal *term, char **tmp, t_info_command **command_cur, t_in
 	tmp_com->fd.out = term->fd.out;
 	tmp_com->fd.error = term->fd.error;
 	tmp_com->fd.history = term->fd.history;
+	term->fd.in = STDIN;
+	term->fd.out = STDOUT;
+	term->fd.error = STDERROR;
 	if ((*command_cur)  == NULL)
 	{
 		(*command_cur) = tmp_com;
