@@ -12,6 +12,25 @@
 
 #include "minishell.h"
 
+void	read_standart_input(t_input_or_output info)
+{
+	char *str;
+	t_pars_def_command all;
+
+	str = NULL;
+	all.pid = fork();
+	if (all.pid == 0)
+	{
+		while (str == NULL || ft_strcmp(str, info.name))
+		{
+			str = readline("> ");
+			if (str == NULL)
+				exit(0);
+		}
+	}
+	waitpid(all.pid, &(all.status), 0);
+}
+
 int	is_input_or_output(t_terminal *term, char *tmp, int *i)
 {
 	t_input_or_output	all;
@@ -21,7 +40,7 @@ int	is_input_or_output(t_terminal *term, char *tmp, int *i)
 	{
 		if (tmp[*i] == '>' || tmp[*i] == '<')
 			all.count++;
-		if ((tmp[*i] == '<' && all.count >= 2)
+		if ((tmp[*i] == '<' && all.count > 2)
 			|| (tmp[*i] == '>' && all.count > 2))
 		{
 			ft_putstr_fd(tmp + *i - all.count, term->fd.error);
@@ -35,6 +54,8 @@ int	is_input_or_output(t_terminal *term, char *tmp, int *i)
 	if (all.name != NULL)
 		if (all_name_null(term, &all) == 1)
 			return (1);
+	if (all.count == 2 && all.c == '<')
+		read_standart_input(all);
 	return (0);
 }
 
@@ -95,7 +116,10 @@ int	par_std_out(t_terminal *term, char **tmp,
 		if ((*tmp)[all.i] == '>' || (*tmp)[all.i] == '<')
 		{
 			if (par_std_out_utils(&all, tmp, term) == 1)
+			{
+				init_tmp_com(&tmp_com, term, last_elem, command_cur); //Влад бля (забыл)
 				return (1);
+			}
 			free(all.fre);
 			free((*tmp));
 			(*tmp) = ft_strdup(all.new_tmp);

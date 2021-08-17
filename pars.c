@@ -26,7 +26,7 @@ int	all_name_null(t_terminal *term, t_input_or_output *all)
 		}
 		free((*all).name);
 	}
-	else
+	else if (all->count != 2)
 		*((*all).fd) = open((*all).name, O_RDWR);
 	if (*((*all).fd) == -1)
 	{
