@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 19:26:48 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/19 14:22:50 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,7 @@ int			pre_pars(t_terminal *term, char ****command_pipe,
 				t_info_command **command_cur, int i);
 int			par_std_out(t_terminal *term, char **tmp,
 				t_info_command **command_cur, t_info_command **last_elem);
+char		**ft_split_pipe(char *line);
 int			count_symbol_str(const char *str, char c);
 void		print_error(char *msg, char *error, int flag, t_terminal *term);
 int			check_not_def_com(char *line, char **not_def_com);

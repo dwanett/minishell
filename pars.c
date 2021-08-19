@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/04 15:14:14 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 18:17:41 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/19 15:42:54 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,8 @@ void	pre_pars_init(int *ret,
 	(*ret) = 1;
 	par_multi_cammand(term);
 	(*command_cur) = NULL;
-	(*tmp) = ft_split(term->line, '|');
+	//(*tmp) = ft_split(term->line, '|');
+	(*tmp) = ft_split_pipe(term->line);
 }
 
 int	pre_pars(t_terminal *term,
@@ -82,7 +83,8 @@ int	pre_pars(t_terminal *term,
 
 	pre_pars_init(&ret, term, command_cur, &tmp);
 	size = ft_size_matrix_and_trim(tmp, " ", term, command_pipe);
-	while (++i != size)
+	i = 0;
+	while (i != size)
 	{
 		if (par_std_out(term, &tmp[i], command_cur, &last_elem))
 			command_pipe_null(command_pipe, i, &ret);
@@ -91,6 +93,7 @@ int	pre_pars(t_terminal *term,
 		if (pars_quotes(&tmp[i], term, command_pipe, i))
 			command_pipe_null(command_pipe, i, &ret);
 		free(tmp[i]);
+		i++;
 	}
 	free(tmp);
 	(*command_pipe)[i] = NULL;
