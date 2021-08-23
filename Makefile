@@ -1,6 +1,6 @@
 NAME = minishell
 CC = gcc
-FLAGS = -Wall -Wextra #-Werror
+FLAGS = -Wall -Wextra -Werror
 LIB = -L libft/ -L ~/.brew/opt/readline/lib/
 HEADER = -I ~/.brew/opt/readline/include/readline/
 OPTION_LIB = -lft -ltermcap -lreadline
@@ -24,7 +24,8 @@ SRC =	minishell.c\
 		pars_quotes.c\
 		pars_utils.c\
 		help_pars_quotes.c\
-		ft_split_pipe.c
+		ft_split_pipe.c\
+		pars_multi_command_help.c
 
 SRCS = $(SRC)
 

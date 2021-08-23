@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/31 15:26:50 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 18:43:40 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/23 15:20:25 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,13 @@ void	free_env(t_list_env *env)
 	}
 }
 
-void	ft_exit_utils(t_terminal *term)
+void	ft_exit_utils(t_terminal *term, int *exot)
 {
 	int	i;
+	int	j;
 
 	i = 0;
+	j = 0;
 	while (term->line != NULL && (term->line)[i] == ' ')
 		i++;
 	while (term->line != NULL && (term->line)[i] != '\0')
@@ -55,16 +57,10 @@ void	ft_exit_utils(t_terminal *term)
 		{
 			while ((term->line)[i] == ' ')
 				i++;
-			if ((term->line)[i] != '\0')
-			{
-				ft_putstr_fd("minishell: exit: ", 1);
-				while ((term->line)[i] != '\0')
-				{
-					ft_putchar_fd((term->line)[i], 1);
-					i++;
-				}
-				ft_putstr_fd(": numeric argument required\n", 1);
-			}
+			j = i;
+			if ((term->line)[i] == '-')
+				j++;
+			ft_exit_help(exot, j, i, term);
 		}
 		i++;
 	}
@@ -73,16 +69,19 @@ void	ft_exit_utils(t_terminal *term)
 // выход из терминала и сохранение истории
 void	ft_exit(t_terminal *term)
 {
+	int	exot;
+
+	exot = 0;
 	if (term->line && (term->history_cmd
 			&& ft_strcmp(term->line, term->history_cmd->command)))
 		ft_add_history(term);
 	save_history(term);
 	free_env(term->env);
 	ft_putstr_fd("exit\n", 1);
-	ft_exit_utils(term);
+	ft_exit_utils(term, &exot);
 	if (term->line != NULL)
 		free(term->line);
-	exit(0);
+	exit(exot);
 }
 
 // CTRL C

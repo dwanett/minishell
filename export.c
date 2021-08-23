@@ -26,6 +26,7 @@ void	ft_export_help_2(char ***command,
 		term->path = (*new_env);
 	(*new_env)->line = ft_strdup(*(*command + i)
 			+ ft_strclen(*(*command + i), '=') + 1);
+	(*new_env)->update_variable = NULL;
 	update_variable_env(term, NULL, (*new_env)->name, NULL);
 	(*new_env)->tmp_variable = 0;
 	(*new_env)->next = NULL;

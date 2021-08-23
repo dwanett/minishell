@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/17 17:12:38 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/23 14:17:45 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/23 15:32:05 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,11 @@ void	ft_cd(char ***command, int i, t_terminal *term)
 	}
 }
 
-void	print_ign(int a)
+void	dupp(t_terminal *term)
 {
-	(void)a;
-	printf("\n");
+	dup2(term->fd.in, 0);
+	dup2(term->fd.out, 1);
+	dup2(term->fd.error, 2);
 }
 
 void	pars_def_command(char ***command, t_terminal *term)
@@ -51,9 +52,7 @@ void	pars_def_command(char ***command, t_terminal *term)
 	all.pid = fork();
 	if (all.pid == 0)
 	{
-		dup2(term->fd.in, 0);
-		dup2(term->fd.out, 1);
-		dup2(term->fd.error, 2);
+		dupp(term);
 		all.l = execve(*command[0], *command, term->start_env);
 	}
 	if (all.l == -1)

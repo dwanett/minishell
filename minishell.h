@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:24 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/19 14:22:50 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/23 16:12:59 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,8 @@ typedef struct s_start_end
 	int				end;
 	char			*new_tmp;
 	char			*fre;
+	int				open_1;
+	int				open_2;
 }				t_start_end;
 
 typedef struct s_input_or_output
@@ -176,4 +178,14 @@ int			pars_quotes(char **command, t_terminal *term,
 int			all_name_null(t_terminal *term, t_input_or_output *all);
 void		count_bad(char *command, int *i);
 int			ligic_quost_two(char *command);
+void		print_ign(int a);
+void		ft_exit_help(int *exot, int j, int i, t_terminal *term);
+void		par_std_out_init(t_start_end *all,
+				t_info_command **tmp_com, t_terminal *term);
+int			par_std_out(t_terminal *term, char **tmp,
+				t_info_command **command_cur, t_info_command **last_elem);
+void		par_multi_cammand(t_terminal *term);
+int			par_std_out_utils(t_start_end *all, char **tmp, t_terminal *term);
+void		init_tmp_com(t_info_command	**tmp_com, t_terminal *term,
+				t_info_command **last_elem, t_info_command **command_cur);
 #endif

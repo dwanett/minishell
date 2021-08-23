@@ -6,21 +6,28 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/17 18:14:47 by gparsnip          #+#    #+#             */
-/*   Updated: 2021/08/17 18:39:40 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/23 15:39:45 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
+void	print_ign(int a)
+{
+	(void)a;
+	printf("\n");
+}
+
 void	read_standart_input(t_input_or_output info)
 {
-	char *str;
-	t_pars_def_command all;
+	char				*str;
+	t_pars_def_command	all;
 
 	str = NULL;
 	all.pid = fork();
 	if (all.pid == 0)
 	{
+		signal(SIGINT, SIG_DFL);
 		while (str == NULL || ft_strcmp(str, info.name))
 		{
 			if (str != NULL)
@@ -32,7 +39,9 @@ void	read_standart_input(t_input_or_output info)
 		free(str);
 		exit(0);
 	}
+	signal(SIGINT, print_ign);
 	waitpid(all.pid, &(all.status), 0);
+	signal(SIGINT, ft_print_n);
 	free(info.name);
 }
 
@@ -102,53 +111,4 @@ int	par_std_out_utils(t_start_end *all, char **tmp, t_terminal *term)
 	(*all).fre = (*all).new_tmp;
 	(*all).new_tmp = ft_strjoin((*all).new_tmp, (*tmp) + (*all).end);
 	return (0);
-}
-
-int	par_std_out(t_terminal *term, char **tmp,
-	t_info_command **command_cur, t_info_command **last_elem)
-{
-	t_start_end		all;
-	t_info_command	*tmp_com;
-
-	all.i = 0;
-	all.new_tmp = NULL;
-	tmp_com = (t_info_command *)malloc(sizeof(t_info_command));
-	if (tmp_com == NULL)
-		print_error(NULL, strerror(errno), 0, term);
-	tmp_com->next = NULL;
-	tmp_com->command = NULL;
-	while ((*tmp)[all.i] != '\0')
-	{
-		if ((*tmp)[all.i] == '>' || (*tmp)[all.i] == '<')
-		{
-			if (par_std_out_utils(&all, tmp, term) == 1)
-			{
-				init_tmp_com(&tmp_com, term, last_elem, command_cur); //Влад бля (забыл)
-				return (1);
-			}
-			free(all.fre);
-			free((*tmp));
-			(*tmp) = ft_strdup(all.new_tmp);
-			free(all.new_tmp);
-			all.i = 0;
-		}
-		all.i++;
-	}
-	init_tmp_com(&tmp_com, term, last_elem, command_cur);
-	return (0);
-}
-
-void	par_multi_cammand(t_terminal *term)
-{
-	int		pos;
-	char	*tmp;
-
-	if (count_symbol_str(term->line, ';') != 0)
-	{
-		pos = ft_strclen(term->line, ';');
-		tmp = ft_strndup(term->line, pos);
-		free(term->line);
-		term->line = tmp;
-		term->flag.error = 1;
-	}
 }
