@@ -60,6 +60,7 @@ int	par_std_out(t_terminal *term, char **tmp,
 			free((*tmp));
 			(*tmp) = ft_strdup(all.new_tmp);
 			free(all.new_tmp);
+			all.new_tmp = NULL;
 			all.i = 0;
 		}
 		all.i++;

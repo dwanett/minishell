@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 23:57:29 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/23 15:51:08 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/23 21:11:38 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,11 @@ void	command(t_terminal *term)
 	t_info_command	*tmp;
 	int				j;
 	int				ret;
+	int				status;
+	int				i;
 
+	status = 0;
+	i = 0;
 	ret = pre_pars(term, &command_pipe, &command_cur, -1);
 	get_info_str_command(&command_cur, term, command_pipe, ret);
 	while (command_cur != NULL)
@@ -67,6 +71,19 @@ void	command(t_terminal *term)
 		command_cur = command_cur->next;
 		free(tmp);
 	}
+	signal(SIGINT, print_ign);
+	while (i != 1)
+	{
+		waitpid(-1, &status, 0);
+		i++;
+	}
+	printf("ggg = %d", i);
+	signal(SIGINT, ft_print_n);
+	free(term->status->line);
+	if (status == 0)
+		term->status->line = ft_strdup("0");
+	else
+		term->status->line = ft_strdup("1");
 	free(command_pipe);
 }
 
