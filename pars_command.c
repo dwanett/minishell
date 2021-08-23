@@ -6,7 +6,7 @@
 /*   By: gparsnip <gparsnip@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/17 17:12:38 by dwanetta          #+#    #+#             */
-/*   Updated: 2021/08/17 19:28:03 by gparsnip         ###   ########.fr       */
+/*   Updated: 2021/08/23 14:17:45 by gparsnip         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,12 @@ void	ft_cd(char ***command, int i, t_terminal *term)
 	}
 }
 
+void	print_ign(int a)
+{
+	(void)a;
+	printf("\n");
+}
+
 void	pars_def_command(char ***command, t_terminal *term)
 {
 	t_pars_def_command	all;
@@ -55,7 +61,9 @@ void	pars_def_command(char ***command, t_terminal *term)
 		print_error(*command[0], strerror(errno), -1, term);
 		exit(-1);
 	}
+	signal(SIGINT, print_ign);
 	waitpid(all.pid, &(all.status), 0);
+	signal(SIGINT, ft_print_n);
 	free(term->status->line);
 	if (all.status == 0)
 		term->status->line = ft_strdup("0");
