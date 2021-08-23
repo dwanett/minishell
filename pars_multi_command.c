@@ -23,13 +23,17 @@ void	read_standart_input(t_input_or_output info)
 	{
 		while (str == NULL || ft_strcmp(str, info.name))
 		{
+			if (str != NULL)
+				free(str);
 			str = readline("> ");
 			if (str == NULL)
-				exit(0);
+				break ;
 		}
+		free(str);
 		exit(0);
 	}
 	waitpid(all.pid, &(all.status), 0);
+	free(info.name);
 }
 
 int	is_input_or_output(t_terminal *term, char *tmp, int *i)
