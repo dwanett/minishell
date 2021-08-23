@@ -69,7 +69,6 @@ void	pre_pars_init(int *ret,
 	(*ret) = 1;
 	par_multi_cammand(term);
 	(*command_cur) = NULL;
-	//(*tmp) = ft_split(term->line, '|');
 	(*tmp) = ft_split_pipe(term->line);
 }
 

@@ -27,6 +27,7 @@ void	read_standart_input(t_input_or_output info)
 			if (str == NULL)
 				exit(0);
 		}
+		exit(0);
 	}
 	waitpid(all.pid, &(all.status), 0);
 }
@@ -111,6 +112,7 @@ int	par_std_out(t_terminal *term, char **tmp,
 	if (tmp_com == NULL)
 		print_error(NULL, strerror(errno), 0, term);
 	tmp_com->next = NULL;
+	tmp_com->command = NULL;
 	while ((*tmp)[all.i] != '\0')
 	{
 		if ((*tmp)[all.i] == '>' || (*tmp)[all.i] == '<')
