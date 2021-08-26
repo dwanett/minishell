@@ -188,4 +188,6 @@ void		par_multi_cammand(t_terminal *term);
 int			par_std_out_utils(t_start_end *all, char **tmp, t_terminal *term);
 void		init_tmp_com(t_info_command	**tmp_com, t_terminal *term,
 				t_info_command **last_elem, t_info_command **command_cur);
+void		free_env_for_next_process(char **envp);
+void		init_env_for_next_process(t_terminal *term, t_list_env *envp);
 #endif

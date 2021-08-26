@@ -68,7 +68,7 @@ void	ft_env_help(t_list_env *tmp, t_terminal *term, int flag)
 		if (flag == 1)
 		{
 			update_variable_env(term, "/usr/bin/export", "export", NULL);
-			if (ft_strcmp(tmp->name, "_"))
+			if (ft_strcmp(tmp->name, "_") && tmp->tmp_variable != 1)
 			{
 				ft_putstr_fd("declare -x ",
 					term->fd.out);

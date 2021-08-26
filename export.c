@@ -61,6 +61,18 @@ void	ft_export_help_1(t_terminal *term,
 		*tmp = new_env;
 }
 
+void	free_env_for_next_process(char **envp)
+{
+	int i;
+
+	i = 0;
+	while (envp[i] != NULL)
+	{
+		free(envp[i]);
+		i++;
+	}
+}
+
 void	ft_export(char ***command, t_terminal *term, int size_arg)
 {
 	t_list_env	*tmp;
@@ -81,4 +93,6 @@ void	ft_export(char ***command, t_terminal *term, int size_arg)
 		i++;
 	}
 	term->env = tmp;
+	free_env_for_next_process(term->start_env);
+	init_env_for_next_process(term, term->env);
 }

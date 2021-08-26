@@ -77,7 +77,7 @@ void	command(t_terminal *term)
 		waitpid(-1, &status, 0);
 		i++;
 	}
-	printf("ggg = %d", i);
+	//printf("ggg = %d", i);
 	signal(SIGINT, ft_print_n);
 	free(term->status->line);
 	if (status == 0)

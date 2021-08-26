@@ -31,6 +31,7 @@ void	init_status_command_env(t_list_env **env, t_terminal *term)
 void	init_env(t_list_env **env, char **envp, t_terminal *term, int i)
 {
 	t_list_env	*tmp;
+	char		*itoa;
 
 	while (envp[i] != NULL)
 		i++;
@@ -44,6 +45,13 @@ void	init_env(t_list_env **env, char **envp, t_terminal *term, int i)
 		tmp->line = ft_strdup(envp[i] + ft_strclen(envp[i], '=') + 1);
 		tmp->update_variable = NULL;
 		tmp->tmp_variable = 0;
+		if (!ft_strncmp(tmp->name, "SHLVL", 5))
+		{
+			itoa = ft_itoa(ft_atoi(tmp->line) + 1);
+			free(tmp->line);
+			tmp->line = ft_strdup(itoa);
+			free(itoa);
+		}
 		if (!ft_strcmp(tmp->name, "PATH"))
 			term->path = tmp;
 		if (!ft_strcmp(tmp->name, "_"))
@@ -57,39 +65,45 @@ void	init_env(t_list_env **env, char **envp, t_terminal *term, int i)
 	init_status_command_env(env, term);
 }
 
-void	init_env_for_next_process(t_terminal *term, char **envp, int j)
+void	init_env_for_next_process(t_terminal *term, t_list_env *envp)
 {
-	int		size_env;
-	char	*tmp;
-	char	*itoa;
+	int			i;
+	char		*tmp;
+	t_list_env	*tmp_env;
 
-	size_env = 0;
-	while (envp[size_env] != NULL)
-		size_env++;
-	term->start_env = (char **)malloc(sizeof(char *) * (size_env + 1));
+	i = 0;
+	tmp_env = envp;
+	while (tmp_env != NULL)
+	{
+		if (tmp_env->tmp_variable != 1)
+			i++;
+		tmp_env = tmp_env->next;
+	}
+	term->start_env = (char **)malloc(sizeof(char *) * (i + 1));
 	if (term->start_env == NULL)
 		print_error(NULL, strerror(errno), 0, term);
-	while (++j != size_env)
+	i = 0;
+	while (envp != NULL)
 	{
-		if (ft_strncmp(envp[j], "SHLVL", 5))
-			term->start_env[j] = ft_strdup(envp[j]);
-		else
+		if (envp->tmp_variable != 1)
 		{
-			tmp = ft_strndup(envp[j], ft_strclen(envp[j], '=') + 1);
-			itoa = ft_itoa(ft_atoi(ft_strchr(envp[j], '=') + 1) + 1);
-			term->start_env[j] = ft_strjoin(tmp, itoa);
-			free(tmp);
-			free(itoa);
+			tmp = ft_strjoin(envp->name, "=");
+			term->start_env[i] = tmp;
+			tmp = ft_strjoin(tmp, envp->line);
+			free(term->start_env[i]);
+			term->start_env[i] = tmp;
+			i++;
 		}
+		envp = envp->next;
 	}
-	term->start_env[j] = NULL;
+	term->start_env[i] = NULL;
 }
 
 void	init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 {
 	term->update = NULL;
-	init_env_for_next_process(term, envp, -1);
-	init_env(&term->env, term->start_env, term, 0);
+	init_env(&term->env, envp, term, 0);
+	init_env_for_next_process(term, term->env);
 	(void)argc;
 	(void)argv;
 	term->fd.history = -1;

@@ -86,4 +86,6 @@ void	ft_unset(char ***command, t_terminal *term, int size_arg)
 			print_error(*(*command + i), "not a valid identifier", 2, term);
 		i++;
 	}
+	free_env_for_next_process(term->start_env);
+	init_env_for_next_process(term, term->env);
 }
