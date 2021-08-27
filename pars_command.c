@@ -64,11 +64,9 @@ void	pars_def_command(char ***command, t_terminal *term)
 	}
 	signal(SIGINT, print_ign);
 	if (term->pip != 0)
-	{
 		kill(term->pip, SIGKILL);
-	}
 	term->pip = all.pid;
-	while (i != 100000000)
+	while (i != 10000000)
 		i++;
 }
 
@@ -99,7 +97,8 @@ void	pars_not_def_command(char ***command, t_terminal *term, int i)
 		ft_env(term, 0, command);
 }
 
-void	pars_command(t_terminal *term, t_info_command **command_cur, int ret)
+void	pars_command(t_terminal *term,
+			t_info_command **command_cur, int ret, int *er)
 {
 	term->fd = (*command_cur)->fd;
 	if (ret && *((*command_cur)->command) != NULL
@@ -116,6 +115,6 @@ void	pars_command(t_terminal *term, t_info_command **command_cur, int ret)
 	{
 		free(term->status->line);
 		term->status->line = ft_strdup("127");
-		term->error = 1;
+		*er = 1;
 	}
 }

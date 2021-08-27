@@ -27,6 +27,7 @@
 # include <sys/wait.h>
 # include <readline/readline.h>
 # include <readline/history.h>
+# include "minishell_utils.h"
 
 # define STDERROR 2
 # define STDOUT 1
@@ -48,73 +49,12 @@ typedef struct s_list_env
 	struct s_list_env	*next;
 }			t_list_env;
 
-typedef struct s_fd
-{
-	int	history;
-	int	error;
-	int	out;
-	int	in;
-}				t_fd;
-
 typedef struct s_flags
 {
 	int		export;
 	int		def_com;
 	int		error;
 }				t_flags;
-
-typedef struct s_info_command
-{
-	char					**command;
-	int						is_def_command;
-	int						number_command;
-	t_fd					fd;
-	struct s_info_command	*next;
-}				t_info_command;
-
-typedef struct s_start_end
-{
-	int				i;
-	int				start;
-	int				end;
-	char			*new_tmp;
-	char			*fre;
-	int				open_1;
-	int				open_2;
-	t_info_command	*tmp_com;
-}				t_start_end;
-
-typedef struct s_input_or_output
-{
-	int		count;
-	char	*start_name_file;
-	char	*name;
-	int		*fd;
-	char	c;
-}				t_input_or_output;
-
-typedef struct s_pars_env_elem
-{
-	int		i;
-	char	*tmp;
-	char	*tmp_2;
-	int		open_one;
-	int		open_two;
-	int		size_name;
-}				t_pars_env_elem;
-
-typedef struct s_char_record
-{
-	int	i;
-	int	j;
-	int	g;
-}				t_char_record;
-typedef struct s_pars_def_command
-{
-	pid_t	pid;
-	int		l;
-	int		status;
-}				t_pars_def_command;
 
 typedef struct s_terminal
 {
@@ -127,13 +67,11 @@ typedef struct s_terminal
 	t_list_env		*status;
 	t_list_env		*path;
 	t_flags			flag;
-	int				pip;
-	int				error;
+	pid_t			pip;
 	char			**start_env;
 }			t_terminal;
 
 void		rl_replace_line(const char *lol, int kek);
-void		free_history(t_terminal *term);					//terminal_utils.c
 void		ft_exit(t_terminal *term);						//terminal_utils.c
 void		ft_print_n(int a);								//terminal_utils.c
 void		ft_add_history(t_terminal *term);				//terminal_history.c
@@ -159,8 +97,8 @@ int			init_term_fd(t_terminal *term);
 void		get_info_str_command(t_info_command **command_cur,
 				t_terminal *term, char ***command_pipe, int ret);
 int			check_def_command(char ***command, t_terminal *term);
-void		pars_command(t_terminal *term,
-				t_info_command **command_cur, int ret);
+void		pars_command(t_terminal *term, t_info_command **command_cur,
+				int ret, int *er);
 void		ft_export(char ***command, t_terminal *term, int size_arg);
 int			is_name(char *elem, int flag);
 void		del_element_env(char *elem, t_terminal *term);
@@ -196,5 +134,5 @@ void		init_env_for_next_process(t_terminal *term, t_list_env *envp);
 void		init_env(t_list_env **env, char **envp, t_terminal *term, int i);
 void		init_env_for_next_process_help(int i,
 				t_list_env *envp, t_terminal *term);
-void		ft_status(t_terminal *term, int status);
+void		ft_status(t_terminal *term, int status, int *er);
 #endif

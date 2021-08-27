@@ -43,7 +43,7 @@ void	last_arg(t_terminal *term, t_info_command **command_cur, int *j)
 	}
 }
 
-void	command(t_terminal *term, int status, int j)
+void	command(t_terminal *term, int status, int j, int er)
 {
 	char			***command_pipe;
 	t_info_command	*command_cur;
@@ -56,8 +56,8 @@ void	command(t_terminal *term, int status, int j)
 	while (command_cur != NULL)
 	{
 		j = 0;
-		term->error = 0;
-		pars_command(term, &command_cur, ret);
+		er = 0;
+		pars_command(term, &command_cur, ret, &er);
 		last_arg(term, &command_cur, &j);
 		if (term->fd.out != STDOUT)
 			close(term->fd.out);
@@ -68,7 +68,7 @@ void	command(t_terminal *term, int status, int j)
 		command_cur = command_cur->next;
 		free(tmp);
 	}
-	ft_status(term, status);
+	ft_status(term, status, &er);
 	free(command_pipe);
 }
 
@@ -95,7 +95,7 @@ void	teminal(t_terminal *term)
 			ft_add_history(term);
 			add_history(term->line);
 		}
-		command(term, 0, 0);
+		command(term, 0, 0, 0);
 		if (term->flag.error == 1)
 			ft_putstr_fd(";: error syntax\n", term->fd.error);
 		term->flag.error = 0;

@@ -97,12 +97,12 @@ void	get_info_str_command(t_info_command **command_cur,
 	}
 }
 
-void	ft_status(t_terminal *term, int status)
+void	ft_status(t_terminal *term, int status, int *er)
 {
 	waitpid(term->pip, &status, 0);
 	signal(SIGINT, ft_print_n);
-	if (term->error == 0)
-	{		
+	if (*er == 0)
+	{
 		free(term->status->line);
 		if (status == 0)
 			term->status->line = ft_strdup("0");
