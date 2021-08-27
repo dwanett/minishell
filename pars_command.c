@@ -64,7 +64,9 @@ void	pars_def_command(char ***command, t_terminal *term)
 	}
 	signal(SIGINT, print_ign);
 	if (term->pip != 0)
+	{
 		kill(term->pip, SIGKILL);
+	}
 	term->pip = all.pid;
 	while (i != 100000000)
 		i++;

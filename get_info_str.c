@@ -110,5 +110,7 @@ void	ft_status(t_terminal *term, int status)
 			term->status->line = ft_strdup("1");
 	}
 	if (term->pip != 0)
+	{
 		kill(term->pip, SIGKILL);
+	}	
 }
