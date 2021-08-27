@@ -67,7 +67,6 @@ void	command(t_terminal *term)
 		command_cur = command_cur->next;
 		free(tmp);
 	}
-	
 	free(command_pipe);
 }
 

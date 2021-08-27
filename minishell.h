@@ -81,6 +81,7 @@ typedef struct s_start_end
 	char			*fre;
 	int				open_1;
 	int				open_2;
+	t_info_command	*tmp_com;
 }				t_start_end;
 
 typedef struct s_input_or_output
@@ -190,4 +191,7 @@ void		init_tmp_com(t_info_command	**tmp_com, t_terminal *term,
 				t_info_command **last_elem, t_info_command **command_cur);
 void		free_env_for_next_process(char **envp);
 void		init_env_for_next_process(t_terminal *term, t_list_env *envp);
+void		init_env(t_list_env **env, char **envp, t_terminal *term, int i);
+void		init_env_for_next_process_help(int i,
+				t_list_env *envp, t_terminal *term);
 #endif
