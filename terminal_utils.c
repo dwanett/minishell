@@ -42,7 +42,7 @@ void	free_env(t_list_env *env)
 	}
 }
 
-void	ft_exit_utils(t_terminal *term, int *exot)
+void	ft_exit_utils(t_terminal *term, long int *exot)
 {
 	int	i;
 	int	j;
@@ -53,7 +53,7 @@ void	ft_exit_utils(t_terminal *term, int *exot)
 		i++;
 	while (term->line != NULL && (term->line)[i] != '\0')
 	{
-		if ((term->line)[i] == ' ')
+		if ((term->line)[i] == ' ' && *exot == 0)
 		{
 			while ((term->line)[i] == ' ')
 				i++;
@@ -69,20 +69,23 @@ void	ft_exit_utils(t_terminal *term, int *exot)
 // выход из терминала и сохранение истории
 void	ft_exit(t_terminal *term)
 {
-	int	exot;
+	long int	exot;
 
 	exot = 0;
-	if (term->line && (term->history_cmd
-			&& ft_strcmp(term->line, term->history_cmd->command)))
-		ft_add_history(term);
-	save_history(term);
-	free_env(term->env);
 	ft_putstr_fd("exit\n", 1);
 	ft_exit_utils(term, &exot);
-	if (term->line != NULL)
+	if (exot != -2)
+	{
+		if (term->line && (term->history_cmd
+			&& ft_strcmp(term->line, term->history_cmd->command)))
+			ft_add_history(term);
+		save_history(term);
+		free_env(term->env);
+		if (term->line != NULL)
 		free(term->line);
-	free_env_for_next_process(term->start_env);
-	exit(exot);
+		free_env_for_next_process(term->start_env);
+		exit(exot);
+	}
 }
 
 // CTRL C

@@ -126,6 +126,8 @@ typedef struct s_terminal
 	t_list_env		*status;
 	t_list_env		*path;
 	t_flags			flag;
+	int				pip;
+	int				error;
 	char			**start_env;
 }			t_terminal;
 
@@ -179,7 +181,7 @@ int			all_name_null(t_terminal *term, t_input_or_output *all);
 void		count_bad(char *command, int *i);
 int			ligic_quost_two(char *command);
 void		print_ign(int a);
-void		ft_exit_help(int *exot, int j, int i, t_terminal *term);
+void		ft_exit_help(long int *exot, int j, int i, t_terminal *term);
 void		par_std_out_init(t_start_end *all,
 				t_info_command **tmp_com, t_terminal *term);
 int			par_std_out(t_terminal *term, char **tmp,

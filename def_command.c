@@ -12,14 +12,41 @@
 
 #include "minishell.h"
 
-void	ft_exit_help(int *exot, int j, int i, t_terminal *term)
+int	ft_exit_help_two(long int *exot, int *j, t_terminal *term, int i)
 {
-	while (ft_isdigit((term->line)[j]))
+	int	spac;
+
+	spac = 0;
+	while ((term->line)[++i] != '\0')
 	{
-		*exot = *exot * 10 + (term->line)[j] - '0';
-		j++;
+		if ((term->line)[i] != ' ' && ft_isdigit((term->line)[i]) == 0)
+			return (0);
+		if ((term->line)[i] == ' ')
+		{
+			while ((term->line)[i] != '\0' && (term->line)[i] == ' ')
+				i++;
+			if ((term->line)[i] != '\0')
+				spac++;
+		}
 	}
-	if ((term->line)[j] != '\0')
+	if (spac != 0)
+		return (2);
+	while (ft_isdigit((term->line)[*j]))
+	{
+		*exot = *exot * 10 + (term->line)[*j] - '0';
+		*j = *j + 1;
+	}
+	if (*exot > 2147483647)
+		*exot = -1;
+	return (1);
+}
+
+void	ft_exit_help(long int *exot, int j, int i, t_terminal *term)
+{
+	int	k;
+
+	k = ft_exit_help_two(exot, &j, term, j - 1);
+	if (k == 0)
 	{
 		ft_putstr_fd("minishell: exit: ", 1);
 		while ((term->line)[i] != '\0')
@@ -32,6 +59,11 @@ void	ft_exit_help(int *exot, int j, int i, t_terminal *term)
 	}
 	if ((term->line)[i] == '-')
 		*exot = -1;
+	if (k == 2)
+	{
+		*exot = -2;
+		ft_putstr_fd("minishell: exit: too many arguments\n", 1);
+	}
 }
 
 int	is_path(const char *command)
