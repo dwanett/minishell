@@ -63,7 +63,7 @@ void	ft_export_help_1(t_terminal *term,
 
 void	free_env_for_next_process(char **envp)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (envp[i] != NULL)
@@ -71,6 +71,7 @@ void	free_env_for_next_process(char **envp)
 		free(envp[i]);
 		i++;
 	}
+	free(envp);
 }
 
 void	ft_export(char ***command, t_terminal *term, int size_arg)

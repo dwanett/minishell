@@ -60,6 +60,15 @@ void	pars_def_command(char ***command, t_terminal *term)
 		print_error(*command[0], strerror(errno), -1, term);
 		exit(-1);
 	}
+	signal(SIGINT, print_ign);
+	waitpid(all.pid, &all.status, 0);
+	signal(SIGINT, ft_print_n);
+	free(term->status->line);
+	if (all.status == 0)
+		term->status->line = ft_strdup("0");
+	else
+		term->status->line = ft_strdup("1");
+	kill(all.pid, SIGKILL);
 }
 
 void	pars_not_def_command(char ***command, t_terminal *term, int i)

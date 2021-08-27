@@ -81,6 +81,7 @@ void	ft_exit(t_terminal *term)
 	ft_exit_utils(term, &exot);
 	if (term->line != NULL)
 		free(term->line);
+	free_env_for_next_process(term->start_env);
 	exit(exot);
 }
 
