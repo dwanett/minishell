@@ -42,9 +42,8 @@ int	par_std_out(t_terminal *term, char **tmp,
 	t_info_command **command_cur, t_info_command **last_elem)
 {
 	t_start_end		all;
-	t_info_command	*tmp_com;
 
-	par_std_out_init(&all, &tmp_com, term);
+	par_std_out_init(&all, &all.tmp_com, term);
 	while ((*tmp)[all.i] != '\0')
 	{
 		qoutes_help_pars_std(&all, tmp);
@@ -53,7 +52,7 @@ int	par_std_out(t_terminal *term, char **tmp,
 		{
 			if (par_std_out_utils(&all, tmp, term) == 1)
 			{
-				init_tmp_com(&tmp_com, term, last_elem, command_cur);
+				init_tmp_com(&all.tmp_com, term, last_elem, command_cur);
 				return (1);
 			}
 			free(all.fre);
@@ -65,7 +64,7 @@ int	par_std_out(t_terminal *term, char **tmp,
 		}
 		all.i++;
 	}
-	init_tmp_com(&tmp_com, term, last_elem, command_cur);
+	init_tmp_com(&all.tmp_com, term, last_elem, command_cur);
 	return (0);
 }
 

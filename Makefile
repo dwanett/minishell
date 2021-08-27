@@ -25,7 +25,8 @@ SRC =	minishell.c\
 		pars_utils.c\
 		help_pars_quotes.c\
 		ft_split_pipe.c\
-		pars_multi_command_help.c
+		pars_multi_command_help.c\
+		init_help.c
 
 SRCS = $(SRC)
 

@@ -69,6 +69,7 @@ void	command(t_terminal *term, int status)
 		command_cur = command_cur->next;
 		free(tmp);
 	}
+<<<<<<< HEAD
 	waitpid(term->pip, &status, 0);
 	signal(SIGINT, ft_print_n);
 	if (term->error == 0)
@@ -81,6 +82,8 @@ void	command(t_terminal *term, int status)
 	}
 	if (term->pip != 0)
 		kill(term->pip, SIGKILL);
+=======
+>>>>>>> 533e8aaf73473374996d2c13d86e0f70d3076e4f
 	free(command_pipe);
 }
 
