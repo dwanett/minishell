@@ -196,4 +196,5 @@ void		init_env_for_next_process(t_terminal *term, t_list_env *envp);
 void		init_env(t_list_env **env, char **envp, t_terminal *term, int i);
 void		init_env_for_next_process_help(int i,
 				t_list_env *envp, t_terminal *term);
+void		ft_status(t_terminal *term, int status);
 #endif

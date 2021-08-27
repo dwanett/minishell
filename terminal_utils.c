@@ -77,12 +77,12 @@ void	ft_exit(t_terminal *term)
 	if (exot != -2)
 	{
 		if (term->line && (term->history_cmd
-			&& ft_strcmp(term->line, term->history_cmd->command)))
+				&& ft_strcmp(term->line, term->history_cmd->command)))
 			ft_add_history(term);
 		save_history(term);
 		free_env(term->env);
 		if (term->line != NULL)
-		free(term->line);
+			free(term->line);
 		free_env_for_next_process(term->start_env);
 		exit(exot);
 	}

@@ -96,3 +96,19 @@ void	get_info_str_command(t_info_command **command_cur,
 		i++;
 	}
 }
+
+void	ft_status(t_terminal *term, int status)
+{
+	waitpid(term->pip, &status, 0);
+	signal(SIGINT, ft_print_n);
+	if (term->error == 0)
+	{		
+		free(term->status->line);
+		if (status == 0)
+			term->status->line = ft_strdup("0");
+		else
+			term->status->line = ft_strdup("1");
+	}
+	if (term->pip != 0)
+		kill(term->pip, SIGKILL);
+}
