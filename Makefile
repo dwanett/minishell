@@ -1,8 +1,10 @@
 NAME = minishell
 CC = gcc
 FLAGS = -Wall -Wextra -Werror
-LIB = -L libft/ -L ~/.brew/opt/readline/lib/
-HEADER = -I ~/.brew/opt/readline/include/readline/
+#LIB = -L libft/ -L ~/.brew/opt/readline/lib/
+#HEADER = -I ~/.brew/opt/readline/include/readline/
+LIB = -L libft/ -L /usr/local/opt/readline/lib/
+HEADER = -I /usr/local/opt/readline/include/readline/
 OPTION_LIB = -lft -ltermcap -lreadline
 LIBFT = make -C libft
 

@@ -66,6 +66,7 @@ typedef struct s_terminal
 	t_list_env		*update;
 	t_list_env		*status;
 	t_list_env		*path;
+	t_list_env		*home;
 	t_flags			flag;
 	pid_t			pip;
 	char			**start_env;

@@ -41,6 +41,8 @@ void	init_env_help(t_list_env **tmp, t_terminal *term, int i, char **envp)
 	}
 	if (!ft_strcmp((*tmp)->name, "PATH"))
 		term->path = (*tmp);
+	if (!ft_strcmp((*tmp)->name, "HOME"))
+		term->home = (*tmp);
 	if (!ft_strcmp((*tmp)->name, "_"))
 	{
 		(*tmp)->update_variable = ft_strdup(ft_strrchr(envp[i], '/') - 1);

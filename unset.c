@@ -18,6 +18,8 @@ void	del_element_env_help(t_terminal *term,
 	(*prev)->next = (*tmp)->next;
 	if (!ft_strcmp((*tmp)->name, "PATH"))
 		term->path = NULL;
+	if (!ft_strcmp((*tmp)->name, "HOME"))
+		term->home = NULL;
 	free((*tmp)->name);
 	free((*tmp)->line);
 	if ((*tmp)->update_variable != NULL)

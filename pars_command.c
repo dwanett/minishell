@@ -24,7 +24,14 @@ void	ft_cd(char ***command, int i, t_terminal *term)
 		return ;
 	}
 	if (i == 1)
-		ret = chdir(getenv("HOME"));
+	{
+		if (term->home == NULL)
+		{
+			print_error("HOME", "not set", 4, term);
+			return ;
+		}
+		ret = chdir(term->home->line);
+	}
 	else
 		ret = chdir(*(*command + 1));
 	if (ret == -1)
