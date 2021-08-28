@@ -36,7 +36,8 @@ void	read_standart_input(t_input_or_output info)
 			if (str == NULL)
 				break ;
 		}
-		free(str);
+		if (str != NULL)
+			free(str);
 		exit(0);
 	}
 	signal(SIGINT, print_ign);
@@ -98,7 +99,7 @@ void	init_tmp_com(t_info_command	**tmp_com, t_terminal *term,
 int	par_std_out_utils(t_start_end *all, char **tmp, t_terminal *term)
 {
 	(*all).start = (*all).i;
-	while ((*tmp)[(*all).start - 1] == ' ')
+	while ((*all).start != 0 && (*tmp)[(*all).start - 1] == ' ')
 		(*all).start--;
 	if (is_input_or_output(term, *tmp, &((*all).i)))
 		return (1);

@@ -39,17 +39,20 @@ int	init_term_fd(t_terminal *term)
 {
 	if (term->fd.in != STDIN)
 	{
-		close(term->fd.in);
+		if (term->fd.in != -1)
+			close(term->fd.in);
 		term->fd.in = STDIN;
 	}
 	if (term->fd.out != STDOUT)
 	{
-		close(term->fd.out);
+		if (term->fd.out != -1)
+			close(term->fd.out);
 		term->fd.out = STDOUT;
 	}
 	if (term->fd.error != STDERROR)
 	{
-		close(term->fd.error);
+		if (term->fd.error != -1)
+			close(term->fd.error);
 		term->fd.error = STDERROR;
 	}
 	return (1);

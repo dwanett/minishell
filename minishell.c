@@ -59,9 +59,9 @@ void	command(t_terminal *term, int status, int j, int er)
 		er = 0;
 		pars_command(term, &command_cur, ret, &er);
 		last_arg(term, &command_cur, &j);
-		if (term->fd.out != STDOUT)
+		if (term->fd.out != STDOUT && term->fd.out != -1)
 			close(term->fd.out);
-		if (term->fd.in != STDIN)
+		if (term->fd.in != STDIN && term->fd.in != -1)
 			close(term->fd.in);
 		free(command_cur->command);
 		tmp = command_cur;

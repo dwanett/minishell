@@ -27,10 +27,14 @@ int	all_name_null(t_terminal *term, t_input_or_output *all)
 		free((*all).name);
 	}
 	else if (all->count != 2)
+	{
 		*((*all).fd) = open((*all).name, O_RDWR);
+		free((*all).name);
+	}
 	if (*((*all).fd) == -1)
 	{
 		print_error((*all).name, strerror(errno), -1, term);
+		free((*all).name);
 		return (1);
 	}
 	return (0);

@@ -38,6 +38,16 @@ void	qoutes_help_pars_std(t_start_end *all, char **tmp)
 		(*all).open_2 = 0;
 }
 
+void	par_std_out_support(t_start_end *all, char **tmp)
+{
+	free((*all).fre);
+	free((*tmp));
+	(*tmp) = ft_strdup((*all).new_tmp);
+	free((*all).new_tmp);
+	(*all).new_tmp = NULL;
+	(*all).i = 0;
+}
+
 int	par_std_out(t_terminal *term, char **tmp,
 	t_info_command **command_cur, t_info_command **last_elem)
 {
@@ -55,14 +65,11 @@ int	par_std_out(t_terminal *term, char **tmp,
 				init_tmp_com(&all.tmp_com, term, last_elem, command_cur);
 				return (1);
 			}
-			free(all.fre);
-			free((*tmp));
-			(*tmp) = ft_strdup(all.new_tmp);
-			free(all.new_tmp);
-			all.new_tmp = NULL;
-			all.i = 0;
+			par_std_out_support(&all, tmp);
 		}
-		all.i++;
+		if ((*tmp)[all.i] != '\0'
+			&& (*tmp)[all.i] != '<' && (*tmp)[all.i] != '>')
+			all.i++;
 	}
 	init_tmp_com(&all.tmp_com, term, last_elem, command_cur);
 	return (0);
