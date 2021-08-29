@@ -15,22 +15,27 @@
 void	ft_export_help_2(char ***command,
 			t_terminal *term, t_list_env **new_env, int i)
 {
+	int k;
+
+	k = ft_strclen(*(*command + i), '=');
 	while (term->env && term->env->next != NULL)
 		term->env = term->env->next;
 	(*new_env) = (t_list_env *)malloc(sizeof(t_list_env));
 	if ((*new_env) == NULL)
 		print_error(NULL, strerror(errno), 0, term);
-	(*new_env)->name = ft_strndup(*(*command + i),
-			 ft_strclen(*(*command + i), '='));
+	(*new_env)->name = ft_strndup(*(*command + i), k);
 	if (!ft_strcmp((*new_env)->name, "PATH"))
 		term->path = (*new_env);
 	if (!ft_strcmp((*new_env)->name, "HOME"))
 		term->home = (*new_env);
-	(*new_env)->line = ft_strdup(*(*command + i)
-			+ ft_strclen(*(*command + i), '=') + 1);
+	if ((*(*command + i))[k] != '\0')
+		(*new_env)->line = ft_strdup(*(*command + i) + k + 1);
+	else
+		(*new_env)->line = NULL;
 	(*new_env)->update_variable = NULL;
 	update_variable_env(term, NULL, (*new_env)->name, NULL);
 	(*new_env)->tmp_variable = 0;
+	(*new_env)->is_initialized = 0;
 	(*new_env)->next = NULL;
 }
 
@@ -57,6 +62,8 @@ void	ft_export_help_1(t_terminal *term,
 	if (is_new_perem_export(*(*command + i), *tmp))
 		del_element_env(*(*command + i), term);
 	ft_export_help_2(command, term, &new_env, i);
+	if (is_ravenstvo(*(*command + i)))
+		new_env->is_initialized = 1;
 	if (term->env)
 		term->env->next = new_env;
 	else
@@ -86,13 +93,13 @@ void	ft_export(char ***command, t_terminal *term, int size_arg)
 	while (i != size_arg)
 	{
 		term->env = tmp;
-		if (is_ravenstvo(*(*command + i)))
-		{
+		//if (is_ravenstvo(*(*command + i)))
+		//{
 			if (!is_name(*(*command + i), 1) && term->flag.export != 1)
 				ft_export_help_1(term, command, &tmp, i);
 			else
 				print_error(*(*command + i), "not a valid identifier", 3, term);
-		}
+		//}
 		i++;
 	}
 	term->env = tmp;

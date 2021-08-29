@@ -66,6 +66,7 @@ void	init_env(t_list_env **env, char **envp, t_terminal *term, int i)
 		tmp->line = ft_strdup(envp[i] + ft_strclen(envp[i], '=') + 1);
 		tmp->update_variable = NULL;
 		tmp->tmp_variable = 0;
+		tmp->is_initialized = 1;
 		init_env_help(&tmp, term, i, envp);
 		tmp->next = *env;
 		*env = tmp;
@@ -104,7 +105,7 @@ void	init_env_for_next_process(t_terminal *term, t_list_env *envp)
 	i = 0;
 	while (envp != NULL)
 	{
-		if (envp->tmp_variable != 1)
+		if (envp->tmp_variable != 1 && envp->is_initialized == 1)
 		{
 			init_env_for_next_process_help(i, envp, term);
 			i++;

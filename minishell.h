@@ -46,6 +46,7 @@ typedef struct s_list_env
 	char				*line;
 	char				*update_variable;
 	int					tmp_variable;
+	int					is_initialized;
 	struct s_list_env	*next;
 }			t_list_env;
 
