@@ -68,7 +68,7 @@ void	pre_pars_utils(t_terminal *term, int i, char **tmp)
 }
 
 void	pre_pars_init(int *ret,
-	t_terminal *term, t_info_command **command_cur, char ***tmp)
+		t_terminal *term, t_info_command **command_cur, char ***tmp)
 {
 	(*ret) = 1;
 	par_multi_cammand(term);
@@ -95,6 +95,9 @@ int	pre_pars(t_terminal *term,
 		pars_env_elem(term, &tmp[i]);
 		if (pars_quotes(&tmp[i], term, command_pipe, i))
 			command_pipe_null(command_pipe, i, &ret);
+		if ((*command_pipe)[i] != NULL
+				&& !ft_strcmp((*command_pipe[i])[0], "echo"))
+			check_repeat_flags(&(*command_pipe[i]), term);
 		free(tmp[i]);
 		i++;
 	}

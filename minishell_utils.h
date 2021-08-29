@@ -76,4 +76,14 @@ typedef struct s_pars_def_command
 	int		status;
 }				t_pars_def_command;
 
+typedef struct s_repeat_flags
+{
+	int		count;
+	int		i;
+	int		j;
+	int		flag;
+	int		n_last;
+	int		k;
+}				t_repeat_flags;
+
 #endif
