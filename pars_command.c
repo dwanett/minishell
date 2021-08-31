@@ -120,7 +120,8 @@ void	pars_command(t_terminal *term,
 		else
 			pars_def_command(&((*command_cur)->command), term);
 	}
-	else if ((*(*command_cur)->command)[0] != '\0')
+	else if ((*command_cur)->command != NULL
+		&& (*(*command_cur)->command)[0] != '\0')
 	{
 		free(term->status->line);
 		term->status->line = ft_strdup("127");

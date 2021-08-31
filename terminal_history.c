@@ -35,57 +35,19 @@ void	ft_add_history(t_terminal *term)
 	term->history_cmd = tmp;
 }
 
-void	read_file_history_help(t_terminal *term, int *l, char **str)
-{
-	char	buf[2];
-
-	(*str) = (char *)malloc(sizeof(char));
-	if ((*str) == NULL)
-		print_error(NULL, strerror(errno), 0, term);
-	(*str)[0] = '\0';
-	while (1)
-	{
-		*l = read(term->fd.history, &buf[0], 1);
-		buf[1] = '\0';
-		if (*l == 0 || *buf == '\n')
-			break ;
-		if (term->line == NULL)
-		{
-			term->line = ft_strjoin((*str), buf);
-			free((*str));
-		}
-		else
-		{
-			(*str) = ft_strjoin(term->line, buf);
-			free(term->line);
-			term->line = (*str);
-		}
-	}
-}
-
 //чтение истории предыдущих сессий
 void	read_file_history(t_terminal *term)
 {
-	int		l;
-	char	*str;
-
-	l = 1;
 	term->fd.history = open(".history", O_RDWR);
 	if (term->fd.history == -1 && errno == 2)
 		return ;
 	else if (term->fd.history == -1)
 		print_error(NULL, strerror(errno), 0, term);
-	while (l != 0)
+	while (get_next_line(term->fd.history, &term->line))
 	{
-		read_file_history_help(term, &l, &str);
-		if (l != 0 && term->line != NULL)
-		{
-			add_history(term->line);
-			ft_add_history(term);
-		}
-		free(str);
-		term->line = NULL;
-		str = NULL;
+		add_history(term->line);
+		ft_add_history(term);
+		free(term->line);
 	}
 }
 
