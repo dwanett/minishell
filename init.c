@@ -32,6 +32,7 @@ void	init_t_teminal(t_terminal *term, int argc, char **argv, char **envp)
 	term->not_def_command[1] = "export";
 	term->not_def_command[2] = "unset";
 	term->not_def_command[3] = "env";
+	term->not_def_command[4] = "exit";
 	read_file_history(term);
 }
 
@@ -56,4 +57,22 @@ int	init_term_fd(t_terminal *term)
 		term->fd.error = STDERROR;
 	}
 	return (1);
+}
+
+int	check_valid_exit_val(char *arg)
+{
+	int	i;
+
+	i = 0;
+	while (arg[i] == '-' || arg[i] == '+')
+		i++;
+	if (i != 1 && i != 0)
+		return (1);
+	while (arg[i] != '\0')
+	{
+		if (!ft_isdigit(arg[i]))
+			return (1);
+		i++;
+	}
+	return (0);
 }

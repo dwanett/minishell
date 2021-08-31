@@ -78,8 +78,8 @@ void	teminal(t_terminal *term)
 	if (init_term_fd(term) && term->line != NULL)
 		free(term->line);
 	term->line = readline("minishell$ ");
-	if (term->line == NULL || !ft_strnccmp(term->line, "exit", ' ', 5))
-		ft_exit(term);
+	if (term->line == NULL)
+		ft_exit(term, NULL);
 	else if (ft_strcmp(term->line, "\0"))
 	{
 		if (term->history_cmd)

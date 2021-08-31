@@ -42,38 +42,44 @@ void	free_env(t_list_env *env)
 	}
 }
 
-void	ft_exit_utils(t_terminal *term, long int *exot)
+void	ft_exit_utils(t_terminal *term, long int *exot, char **command)
 {
 	int	i;
-	int	j;
+	int	check;
 
 	i = 0;
-	j = 0;
-	while (term->line != NULL && (term->line)[i] == ' ')
+	while (command[i] != NULL)
 		i++;
-	while (term->line != NULL && (term->line)[i] != '\0')
+	if (i >= 2)
 	{
-		if ((term->line)[i] == ' ' && *exot == 0)
+		check = check_valid_exit_val(command[1]);
+		if (check != 0)
 		{
-			while ((term->line)[i] == ' ')
-				i++;
-			j = i;
-			if ((term->line)[i] == '-')
-				j++;
-			ft_exit_help(exot, j, i, term);
+			ft_putstr_fd("minishell: exit: ", term->fd.error);
+			ft_putstr_fd(command[1], term->fd.error);
+			ft_putstr_fd(": numeric argument required\n", term->fd.error);
+			*exot = 255;
 		}
-		i++;
+		else if (i > 2)
+		{
+			*exot = -2;
+			ft_putstr_fd("minishell: exit: too many arguments\n",
+				term->fd.error);
+		}
+		else
+			*exot = ft_atoi(command[1]);
 	}
 }
 
 // выход из терминала и сохранение истории
-void	ft_exit(t_terminal *term)
+void	ft_exit(t_terminal *term, char **command)
 {
 	long int	exot;
 
 	exot = 0;
 	ft_putstr_fd("exit\n", 1);
-	ft_exit_utils(term, &exot);
+	if (command != NULL)
+		ft_exit_utils(term, &exot, command);
 	if (exot != -2)
 	{
 		if (term->line && (term->history_cmd

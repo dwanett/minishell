@@ -41,31 +41,6 @@ int	ft_exit_help_two(long int *exot, int *j, t_terminal *term, int i)
 	return (1);
 }
 
-void	ft_exit_help(long int *exot, int j, int i, t_terminal *term)
-{
-	int	k;
-
-	k = ft_exit_help_two(exot, &j, term, j - 1);
-	if (k == 0)
-	{
-		ft_putstr_fd("minishell: exit: ", 1);
-		while ((term->line)[i] != '\0')
-		{
-			ft_putchar_fd((term->line)[i], 1);
-			i++;
-		}
-		ft_putstr_fd(": numeric argument required\n", 1);
-		*exot = -1;
-	}
-	if ((term->line)[i] == '-')
-		*exot = -1;
-	if (k == 2)
-	{
-		*exot = -2;
-		ft_putstr_fd("minishell: exit: too many arguments\n", 1);
-	}
-}
-
 int	is_path(const char *command)
 {
 	int	i;

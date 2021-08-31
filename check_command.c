@@ -18,7 +18,7 @@ int	check_not_def_com(char *line, char **not_def_com)
 	int	i;
 
 	i = 0;
-	while (i != 4)
+	while (i != 5)
 	{
 		if (!ft_strncmp(not_def_com[i], line, ft_strlen(not_def_com[i])))
 			return (i);

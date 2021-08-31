@@ -63,7 +63,7 @@ typedef struct s_terminal
 	t_list_env		*env;
 	t_list_histoy	*history_cmd;
 	t_fd			fd;
-	char			*not_def_command[4];
+	char			*not_def_command[5];
 	t_list_env		*update;
 	t_list_env		*status;
 	t_list_env		*path;
@@ -74,7 +74,7 @@ typedef struct s_terminal
 }			t_terminal;
 
 void		rl_replace_line(const char *lol, int kek);
-void		ft_exit(t_terminal *term);						//terminal_utils.c
+void		ft_exit(t_terminal *term, char **command);		//terminal_utils.c
 void		ft_print_n(int a);								//terminal_utils.c
 void		ft_add_history(t_terminal *term);				//terminal_history.c
 void		read_file_history(t_terminal *term);			//terminal_history.c
@@ -139,4 +139,5 @@ void		init_env_for_next_process_help(int i,
 void		ft_status(t_terminal *term, int status, int *er);
 void		check_repeat_flags(char ***command_pipe, t_terminal *term);
 void		ft_env_print_export(t_list_env *tmp, t_terminal *term);
+int			check_valid_exit_val(char *arg);
 #endif

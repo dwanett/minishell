@@ -109,7 +109,7 @@ void	ft_status(t_terminal *term, int status, int *er)
 		if (status == 2)
 			term->status->line = ft_strdup("130");
 		else
-			term->status->line = ft_strdup(ft_itoa(WEXITSTATUS(status)));
+			term->status->line = ft_itoa(WEXITSTATUS(status));
 	}
 	if (term->pip != 0)
 	{

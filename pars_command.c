@@ -102,6 +102,8 @@ void	pars_not_def_command(char ***command, t_terminal *term, int i)
 		ft_unset(command, term, size_arg);
 	else if (i == 3)
 		ft_env(term, 0, command);
+	else if (i == 4)
+		ft_exit(term, *command);
 }
 
 void	pars_command(t_terminal *term,
@@ -118,7 +120,7 @@ void	pars_command(t_terminal *term,
 		else
 			pars_def_command(&((*command_cur)->command), term);
 	}
-	else
+	else if ((*(*command_cur)->command)[0] != '\0')
 	{
 		free(term->status->line);
 		term->status->line = ft_strdup("127");
