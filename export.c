@@ -15,7 +15,7 @@
 void	ft_export_help_2(char ***command,
 			t_terminal *term, t_list_env **new_env, int i)
 {
-	int k;
+	int	k;
 
 	k = ft_strclen(*(*command + i), '=');
 	while (term->env && term->env->next != NULL)
@@ -93,13 +93,10 @@ void	ft_export(char ***command, t_terminal *term, int size_arg)
 	while (i != size_arg)
 	{
 		term->env = tmp;
-		//if (is_ravenstvo(*(*command + i)))
-		//{
-			if (!is_name(*(*command + i), 1) && term->flag.export != 1)
-				ft_export_help_1(term, command, &tmp, i);
-			else
-				print_error(*(*command + i), "not a valid identifier", 3, term);
-		//}
+		if (!is_name(*(*command + i), 1) && term->flag.export != 1)
+			ft_export_help_1(term, command, &tmp, i);
+		else
+			print_error(*(*command + i), "not a valid identifier", 3, term);
 		i++;
 	}
 	term->env = tmp;

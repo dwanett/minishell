@@ -96,7 +96,7 @@ int	pre_pars(t_terminal *term,
 		if (pars_quotes(&tmp[i], term, command_pipe, i))
 			command_pipe_null(command_pipe, i, &ret);
 		if ((*command_pipe)[i] != NULL
-				&& !ft_strcmp((*command_pipe[i])[0], "echo"))
+				&& !ft_strcmp((*command_pipe)[i][0], "echo"))
 			check_repeat_flags(&(*command_pipe[i]), term);
 		free(tmp[i]);
 		i++;

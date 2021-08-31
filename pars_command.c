@@ -51,10 +51,9 @@ void	dupp(t_terminal *term)
 void	pars_def_command(char ***command, t_terminal *term)
 {
 	t_pars_def_command	all;
-	int					i;
 
 	all.l = 0;
-	i = 0;
+	all.i = 0;
 	update_variable_env(term, *command[0],
 		ft_strrchr(*command[0], '/') + 1, NULL);
 	term->flag.def_com = 1;
@@ -63,18 +62,19 @@ void	pars_def_command(char ***command, t_terminal *term)
 	{
 		dupp(term);
 		all.l = execve(*command[0], *command, term->start_env);
+		ft_putstr_fd("\n", 1);
 	}
 	if (all.l == -1)
 	{
 		print_error(*command[0], strerror(errno), -1, term);
 		exit(-1);
 	}
-	signal(SIGINT, print_ign);
+	signal(SIGINT, SIG_IGN);
 	if (term->pip != 0)
 		kill(term->pip, SIGKILL);
 	term->pip = all.pid;
-	while (i != 10000000)
-		i++;
+	while (all.i != 10000000)
+		all.i++;
 }
 
 void	pars_not_def_command(char ***command, t_terminal *term, int i)

@@ -138,4 +138,5 @@ void		init_env_for_next_process_help(int i,
 				t_list_env *envp, t_terminal *term);
 void		ft_status(t_terminal *term, int status, int *er);
 void		check_repeat_flags(char ***command_pipe, t_terminal *term);
+void		ft_env_print_export(t_list_env *tmp, t_terminal *term);
 #endif

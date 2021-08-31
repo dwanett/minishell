@@ -100,17 +100,19 @@ void	get_info_str_command(t_info_command **command_cur,
 void	ft_status(t_terminal *term, int status, int *er)
 {
 	waitpid(term->pip, &status, 0);
+	if (status == 2)
+		ft_putstr_fd("\n", 1);
 	signal(SIGINT, ft_print_n);
 	if (*er == 0)
 	{
 		free(term->status->line);
-		if (status == 0)
-			term->status->line = ft_strdup("0");
+		if (status == 2)
+			term->status->line = ft_strdup("130");
 		else
-			term->status->line = ft_strdup("1");
+			term->status->line = ft_strdup(ft_itoa(WEXITSTATUS(status)));
 	}
 	if (term->pip != 0)
 	{
 		kill(term->pip, SIGKILL);
-	}	
+	}
 }

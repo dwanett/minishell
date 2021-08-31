@@ -69,17 +69,7 @@ void	ft_env_help(t_list_env *tmp, t_terminal *term, int flag)
 		{
 			update_variable_env(term, "/usr/bin/export", "export", NULL);
 			if (ft_strcmp(tmp->name, "_") && tmp->tmp_variable != 1)
-			{
-				ft_putstr_fd("declare -x ", term->fd.out);
-				ft_putstr_fd(tmp->name, term->fd.out);
-				if (tmp->is_initialized == 1)
-				{
-					ft_putstr_fd("=\"", term->fd.out);
-					ft_putstr_fd(tmp->line, term->fd.out);
-					ft_putstr_fd("\"", term->fd.out);
-				}
-				ft_putstr_fd("\n", term->fd.out);
-			}
+				ft_env_print_export(tmp, term);
 		}
 		else if (tmp->tmp_variable == 0 && tmp->is_initialized == 1)
 		{

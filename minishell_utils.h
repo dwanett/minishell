@@ -73,6 +73,7 @@ typedef struct s_pars_def_command
 {
 	pid_t	pid;
 	int		l;
+	int		i;
 	int		status;
 }				t_pars_def_command;
 
