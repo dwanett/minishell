@@ -17,4 +17,4 @@ make
 Исполняемый файл `minishell`
 
 # Пример работы
-![](https://github.com/dwanett/minishell/tree/master/gif/1.gif)
+![](https://github.com/dwanett/minishell/blob/master/gif/1.gif)
