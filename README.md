@@ -1,7 +1,7 @@
 # Описание
 minishell - это проект школы 21, который требует реализации собственной оболочки. Она должна работать подобно bash <br/>
 
-`pipes`, `semicolons`, `escape` `sequences`, `enviroment` `variables`, `$?`, `~`, перенаправление ввода/вывода: `>` `>>` `<`
+`pipes`, `semicolons`, `enviroment` `variables`, `$?`, `~`, перенаправление ввода/вывода: `>` `>>` `<`
 
 Реализованные команды: `cd`, `pwd`, `echo`, `export`, `unset`, `env`, `exit`.
 
